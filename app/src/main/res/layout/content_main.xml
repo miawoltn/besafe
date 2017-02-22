@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.miawoltn.emergencydispatch.MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/robbery"
+        android:id="@+id/robbery"
+        android:layout_alignTop="@+id/fire"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="42dp" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/fire"
+        android:id="@+id/fire"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="29dp" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/accident"
+        android:layout_below="@+id/terror_attack"
+        android:layout_alignStart="@+id/terror_attack"
+        android:id="@+id/accident" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/natural_disaster"
+        android:layout_marginTop="18dp"
+        android:id="@+id/natural_disaster"
+        android:layout_below="@+id/accident"
+        android:layout_alignStart="@+id/terror_attack" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/murder"
+        android:id="@+id/murder"
+        android:layout_alignTop="@+id/terror_attack"
+        android:layout_alignStart="@+id/robbery" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/suicide"
+        android:id="@+id/suicide"
+        android:layout_above="@+id/natural_disaster"
+        android:layout_alignStart="@+id/murder" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/terrorist"
+        android:layout_marginTop="12dp"
+        android:id="@+id/terror_attack"
+        android:layout_below="@+id/fire"
+        android:layout_alignStart="@+id/fire" />
+</RelativeLayout>
