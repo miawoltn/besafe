@@ -113,4 +113,7 @@
     <string name="null_pdu">Dispatch not sent. Null PDU</string>
     <string name="radio_off">Dispatch not sent. Radio off</string>
     <string name="googlemap_endpoint">http://maps.googleapis.com/maps/api/geocode/jsonlatlng=</string>
+    <string name="title_activity_contacts">Contacts</string>
+    <string name="title_activity_dispatch_numbers">DispatchNumbersActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>

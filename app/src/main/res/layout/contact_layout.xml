@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <CheckBox
+        android:text=" "
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/selected"
+        android:layout_weight="10" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="80">
+
+        <TextView
+            android:text="Contact Name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/contact_name"
+            android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+        <TextView
+            android:text="Contant Number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/contact_number" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/contact_id"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+</LinearLayout>

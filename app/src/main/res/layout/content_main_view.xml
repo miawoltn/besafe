@@ -33,14 +33,6 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/accident"
-        android:layout_below="@+id/terror_attack"
-        android:layout_alignStart="@+id/terror_attack"
-        android:id="@+id/accident" />
-
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         app:srcCompat="@drawable/natural_disaster"
         android:layout_marginTop="18dp"
         android:id="@+id/natural_disaster"
@@ -71,4 +63,13 @@
         android:id="@+id/terror_attack"
         android:layout_below="@+id/fire"
         android:layout_alignStart="@+id/fire" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/accident"
+        android:id="@+id/accident"
+        android:layout_below="@+id/terror_attack"
+        android:layout_alignStart="@+id/natural_disaster"
+        android:layout_marginTop="15dp" />
 </RelativeLayout>

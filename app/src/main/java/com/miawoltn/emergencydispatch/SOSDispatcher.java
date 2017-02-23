@@ -60,7 +60,7 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
 
 
     /**
-     * Sends SOS to the list of phone numbers specified.
+     * Sends SOS to the list of number numbers specified.
      *
      * @param phoneNumbers
      * @param  SOS
