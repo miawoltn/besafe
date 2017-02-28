@@ -7,20 +7,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
-import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,7 +29,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +38,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-public class DispatchNumbersActivity extends AppCompatActivity {
+import com.miawoltn.emergencydispatch.Contact.*;
+
+
+public class ContactActivity extends AppCompatActivity {
 
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -48,6 +49,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
     private final int PAGES = 2;
     private final String PAGE_1_TITLE = "Dispatch Numbers";
     private final String PAGE_2_TITLE = "Contact List";
+    private Contact contact;
 
 
     static ContactListAdapter contactListAdapter, dispatchNumbersAdapter;
@@ -58,7 +60,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
     static Cursor phone, dispatch;
     SearchView searchView;
     ContentResolver contentResolver;
-    ContactsDbHelper contactsDbHelper;
+    Logger contactsDbHelper;
     static DispatchListLoader dispatchListLoader;
     static ContactListLoader contactListLoader;
     FloatingActionButton contactListFab, dispatchListFab;
@@ -72,7 +74,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dispatch_numbers);
+        setContentView(R.layout.activity_contact);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,6 +84,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 
+        contact = Contact.getInstance(ContactActivity.this);
         contactsTempList = new ArrayList<>();
         dispatchTempList = new ArrayList<>();
 
@@ -101,7 +104,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
                     contactListFab.setVisibility(View.INVISIBLE);
                     dispatchListFab.setVisibility(View.VISIBLE);
                     currentPage = position;
-                   // updateAdapter(dispatchListView, dispatchTempList);
+                    // updateAdapter(historyListView, dispatchTempList);
                 }
                 if(fragment instanceof  ContactListFragment) {
                     dispatchListFab.setVisibility(View.INVISIBLE);
@@ -119,17 +122,13 @@ public class DispatchNumbersActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-
-
         dispatchListLoader = new DispatchListLoader();
         contactListLoader = new ContactListLoader();
-
 
         contactsListArray = new ArrayList<>();
         dispatchList = new ArrayList<>();
         contentResolver = getContentResolver();
-        contactsDbHelper = new ContactsDbHelper(DispatchNumbersActivity.this);
+        contactsDbHelper = (Logger)contact.getContactDbHelper();
         phone = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
 
 
@@ -167,10 +166,9 @@ public class DispatchNumbersActivity extends AppCompatActivity {
                 for (UserContactModel userContact : contactsListArray) {
                     if(userContact.getSelected()) {
 
-                        long id = contactsDbHelper.insert(userContact.getId(),userContact.getName(),userContact.getNumber(), System.currentTimeMillis());
+                        long id = contactsDbHelper.insertContact( userContact.getName(),userContact.getNumber(), System.currentTimeMillis());
 
-                        Snackbar.make(view, "Selected item found. "+ id, Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
+                        Log.i("TAG:","Selected item found. "+ id);
                         contactsTempList.remove(userContact);
                         userContact.setSelected(!userContact.getSelected());
                         dispatchTempList.add(userContact);
@@ -193,7 +191,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
                 for (UserContactModel userContact : dispatchList) {
                     if(userContact.getSelected()) {
 
-                         contactsDbHelper.delete(userContact.getName());
+                        contactsDbHelper.deleteContact(userContact.getName());
                         Log.i("TAG:","Selected item found.");
                         dispatchTempList.remove(userContact);
                         userContact.setSelected(!userContact.getSelected());
@@ -272,7 +270,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
 
             //super.onPostExecute(aVoid);
 
-            dispatchNumbersAdapter = new ContactListAdapter(dispatchList, DispatchNumbersActivity.this);
+            dispatchNumbersAdapter = new ContactListAdapter(dispatchList, ContactActivity.this);
             dispatchListView.setAdapter(dispatchNumbersAdapter);
             dispatchListView.setFastScrollEnabled(true);
             dispatchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -293,16 +291,14 @@ public class DispatchNumbersActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
 
-            dispatch = contactsDbHelper.selectAll();
+            dispatch = contactsDbHelper.selectAllContacts();
             if(dispatch != null) {
                 if(dispatch.getCount() > 0) {
                     while (dispatch.moveToNext()) {
-                        String id = dispatch.getString(dispatch.getColumnIndex(ContactEntry.COLUMN_NAME_ID));
-                        String name = dispatch.getString(dispatch.getColumnIndex(ContactEntry.COLUMN_NAME_NAME));
-                        String number = dispatch.getString(dispatch.getColumnIndex(ContactEntry.COLUMN_NAME_NUMBER));
+                        String name = dispatch.getString(dispatch.getColumnIndex(Logger.ContactEntry.COLUMN_NAME_NAME));
+                        String number = dispatch.getString(dispatch.getColumnIndex(Logger.ContactEntry.COLUMN_NAME_NUMBER));
 
                         userContactModel = new UserContactModel();
-                        userContactModel.setId(id);
                         userContactModel.setName(name);
                         userContactModel.setNumber(number);
                         userContactModel.setSelected(false);
@@ -359,9 +355,9 @@ public class DispatchNumbersActivity extends AppCompatActivity {
             contactsTempList.addAll(contactsListArray);
             for (UserContactModel uc : contactsListArray){
                 for(UserContactModel ucModel : dispatchList) {
-                    if(uc.getId().equals(ucModel.getId())) {
+                    if(uc.getNumber().equals(ucModel.getNumber())) {
                         Log.i("Tag","found added contact");
-                            contactsTempList.remove(uc);
+                        contactsTempList.remove(uc);
                     }
                 }
 
@@ -369,7 +365,7 @@ public class DispatchNumbersActivity extends AppCompatActivity {
             contactsListArray.clear();
             contactsListArray.addAll(contactsTempList);
 
-            contactListAdapter = new ContactListAdapter(contactsListArray, DispatchNumbersActivity.this);
+            contactListAdapter = new ContactListAdapter(contactsListArray, ContactActivity.this);
             contactListView.setAdapter(contactListAdapter);
             contactListView.setFastScrollEnabled(true);
             contactListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -398,7 +394,6 @@ public class DispatchNumbersActivity extends AppCompatActivity {
                         String number = phone.getString(phone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
                         userContactModel = new UserContactModel();
-                        userContactModel.setId(id);
                         userContactModel.setName(name);
                         userContactModel.setNumber(number);
                         userContactModel.setSelected(false);
@@ -524,14 +519,14 @@ public class DispatchNumbersActivity extends AppCompatActivity {
         if(baseAdapter.getAdapter() != null) {
             ((ContactListAdapter) baseAdapter.getAdapter()).update(userContactModels);
         }else {
-            ContactListAdapter contactListAdapter = new ContactListAdapter( userContactModels, DispatchNumbersActivity.this);
+            ContactListAdapter contactListAdapter = new ContactListAdapter( userContactModels, ContactActivity.this);
             baseAdapter.setAdapter(contactListAdapter);
         }
     }
 
     static class ContactHolder {
 
-        private TextView id = null;
+       // private TextView id = null;
         private TextView name = null;
         private TextView number = null;
         private CheckBox selected = null;
@@ -539,21 +534,20 @@ public class DispatchNumbersActivity extends AppCompatActivity {
 
         ContactHolder(View row) {
             this.row = row;
-            id = (TextView) row.findViewById(R.id.contact_id);
+            //id = (TextView) row.findViewById(R.id.contact_id);
             name = (TextView) row.findViewById(R.id.contact_name);
             number = (TextView) row.findViewById(R.id.contact_number);
             selected = (CheckBox) row.findViewById(R.id.selected);
         }
 
         void populateFrom(UserContactModel helper) {
-            id.setText(helper.getId());
             name.setText(helper.getName());
             number.setText(helper.getNumber());
             selected.setChecked(helper.getSelected());
         }
     }
 
-    public static class UserContactModel {
+   /* public static class UserContactModel {
 
         String id;
         String name;
@@ -592,140 +586,5 @@ public class DispatchNumbersActivity extends AppCompatActivity {
             return selected;
         }
     }
-
-
-
-
-    public class ContactEntry implements BaseColumns {
-        public static final String TABLE_NAME = "dipatch_contacts";
-        public static final String COLUMN_NAME_ID = "contact_id";
-        public static final String COLUMN_NAME_NAME = "contact_name";
-        public static final String COLUMN_NAME_NUMBER = "contact_number";
-        public static final String COLUMN_NAME_TIME_STAMP = "time_stamp";
-    }
-
-    public class ContactsDbHelper extends SQLiteOpenHelper {
-        // If you change the database schema, you must increment the database version.
-        public static final int DATABASE_VERSION = 1;
-        public static final String DATABASE_NAME = "contacts.db";
-
-        private static final String SQL_CREATE_ENTRIES =
-                "CREATE TABLE " + ContactEntry.TABLE_NAME + " (" +
-                        ContactEntry._ID + " INTEGER PRIMARY KEY," +
-                        ContactEntry.COLUMN_NAME_ID + " TEXT," +
-                        ContactEntry.COLUMN_NAME_NAME + " TEXT," +
-                        ContactEntry.COLUMN_NAME_NUMBER + " TEXT,"+
-                        ContactEntry.COLUMN_NAME_TIME_STAMP + " LONG);";
-
-        private static final String SQL_DELETE_ENTRIES =
-                "DROP TABLE IF EXISTS " + ContactEntry.TABLE_NAME;
-
-        public ContactsDbHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL(SQL_DELETE_ENTRIES);
-            db.execSQL(SQL_CREATE_ENTRIES);
-            Toast.makeText(DispatchNumbersActivity.this,"db created",Toast.LENGTH_SHORT).show();
-
-        }
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // This database is only a cache for online data, so its upgrade policy is
-            // to simply to discard the data and start over
-            db.execSQL(SQL_DELETE_ENTRIES);
-            onCreate(db);
-        }
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            onUpgrade(db, oldVersion, newVersion);
-        }
-
-        public long insert(String id, String name, String number, long timeStamp) {
-            // Gets the data repository in write mode
-            SQLiteDatabase db = getWritableDatabase();
-
-            // Create a new map of values, where column names are the keys
-            ContentValues values = new ContentValues();
-            values.put(ContactEntry.COLUMN_NAME_ID, id);
-            values.put(ContactEntry.COLUMN_NAME_NAME, name);
-            values.put(ContactEntry.COLUMN_NAME_NUMBER, number);
-            values.put(ContactEntry.COLUMN_NAME_TIME_STAMP, timeStamp);
-
-            // Insert the new row, returning the primary key value of the new row
-            long newRowId = db.insert(ContactEntry.TABLE_NAME, null, values);
-            return newRowId;
-        }
-
-        public Cursor selectAll() {
-            SQLiteDatabase db = getReadableDatabase();
-
-            // Define a projection that specifies which columns from the database
-            // you will actually use after this query.
-            String[] projection = {
-                    ContactEntry._ID,
-                    ContactEntry.COLUMN_NAME_ID,
-                    ContactEntry.COLUMN_NAME_NAME,
-                    ContactEntry.COLUMN_NAME_NUMBER,
-                    ContactEntry.COLUMN_NAME_TIME_STAMP
-            };
-
-
-            // How you want the results sorted in the resulting Cursor
-            String sortOrder =   ContactEntry.COLUMN_NAME_NAME + " ASC";
-
-            Cursor cursor = db.query(
-                    ContactEntry.TABLE_NAME,                     // The table to query
-                    projection,                               // The columns to return
-                    null,                                // The columns for the WHERE clause
-                    null,                            // The values for the WHERE clause
-                    null,                                     // don't group the rows
-                    null,                                     // don't filter by row groups
-                    sortOrder                                 // The sort order
-            );
-
-            return cursor;
-        }
-
-        public Cursor query(String name) {
-            SQLiteDatabase db = getReadableDatabase();
-
-            // Define a projection that specifies which columns from the database
-            // you will actually use after this query.
-            String[] projection = {
-                    ContactEntry._ID,
-                    ContactEntry.COLUMN_NAME_ID,
-                    ContactEntry.COLUMN_NAME_NAME,
-                    ContactEntry.COLUMN_NAME_NUMBER,
-                    ContactEntry.COLUMN_NAME_TIME_STAMP
-            };
-
-            // Filter results WHERE "title" = 'My Title'
-            String selection = ContactEntry.COLUMN_NAME_NAME + " = ? or " + ContactEntry.COLUMN_NAME_ID + " = ?" ;
-            String[] selectionArgs = { name, name };
-
-            // How you want the results sorted in the resulting Cursor
-            String sortOrder =  ContactEntry.COLUMN_NAME_NAME + " DESC";
-
-            Cursor cursor = db.query(
-                    ContactEntry.TABLE_NAME,                     // The table to query
-                    projection,                               // The columns to return
-                    selection,                                // The columns for the WHERE clause
-                    selectionArgs,                            // The values for the WHERE clause
-                    null,                                     // don't group the rows
-                    null,                                     // don't filter by row groups
-                    sortOrder                                 // The sort order
-            );
-
-            return cursor;
-        }
-
-        public void delete(String name) {
-            SQLiteDatabase db = getWritableDatabase();
-            // Define 'where' part of query.
-            String selection = ContactEntry.COLUMN_NAME_NAME + " LIKE ?";
-            // Specify arguments in placeholder order.
-            String[] selectionArgs = { name };
-            // Issue SQL statement.
-            db.delete(ContactEntry.TABLE_NAME, selection, selectionArgs);
-        }
-    }
+*/
 }

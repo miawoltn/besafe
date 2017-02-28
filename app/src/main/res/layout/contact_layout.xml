@@ -31,11 +31,11 @@
             android:layout_height="wrap_content"
             android:id="@+id/contact_number" />
 
-        <TextView
+        <!--TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/contact_id"
-            android:visibility="invisible" />
+            android:visibility="invisible" /-->
     </LinearLayout>
 
 </LinearLayout>

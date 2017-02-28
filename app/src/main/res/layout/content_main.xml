@@ -72,4 +72,5 @@
         android:id="@+id/terror_attack"
         android:layout_below="@+id/fire"
         android:layout_alignStart="@+id/fire" />
+
 </RelativeLayout>

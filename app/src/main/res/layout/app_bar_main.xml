@@ -21,14 +21,19 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main_view" />
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"></FrameLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/home_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@color/navcolorPrimary"
         app:srcCompat="@android:drawable/ic_menu_revert" />
 
 </android.support.design.widget.CoordinatorLayout>

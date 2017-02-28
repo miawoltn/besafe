@@ -32,12 +32,17 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
 
     final String SENT = "SMS_SENT";
     final String DELIVERED = "SMS_DELIVERED";
+    final static String FAILE_SAFE = "SEND_FALSE_POSITIVE";
     Context context;
+    Contact contact;
+    Logger logger;
     GPS gps;
 
-    boolean hasPendingDispatch = false;
-    DistressType distressType = null;
 
+    boolean hasPendingDispatch = false;
+    boolean tracking = false;
+    DistressType distressType = null;
+    boolean isFalsePositive = true;
 
 
     /**
@@ -47,17 +52,67 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
      */
     public SOSDispatcher(Context context) {
         this.context = context;
+        gps = GPS.getInstance(context);
+        contact = Contact.getInstance(context);
+        logger = Logger.getInstance(context);
     }
 
 
+    /**
+     *
+     * @param distressType
+     * @param track
+     */
+    public void Dispatch(DistressType distressType, boolean track) {
+        if (track) {
+            Track();
+        }
+        Dispatch(distressType);
+    }
+
+
+    /**
+     *
+     * @param distressType
+     */
     public void Dispatch(DistressType distressType) {
         hasPendingDispatch = true;
         this.distressType = distressType;
-        GPS gps = GPS.getInstance(context);
+        listenToBroadcast();
+        startTracking();
+    }
+
+    public void sendFalsePositive() {
+        if(isFalsePositive) {
+            List<String> numbers = contact.getNumbers();
+            Log.i("Checking number:",numbers.toString());
+            sendSMS(numbers, "Please ignore it is a false positive");
+            //logger.log(,contact.getNumberIds());
+            Toast.makeText(context,"False positive sent",Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(context, R.string.fail_safe_message, Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    public void Track() {
+        tracking = true;
+    }
+
+    /**
+     *
+     */
+    public void startTracking() {
         gps.setLocationListener(this);
         gps.requestLocationUpadate(this);
     }
 
+    /**
+     *
+     */
+    public void stopTracking() {
+        gps.removeLocationUpadate();
+    }
 
     /**
      * Sends SOS to the list of number numbers specified.
@@ -120,6 +175,7 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
             }
         }, new IntentFilter(DELIVERED));
 
+
         SmsManager sosDispatcher = SmsManager.getDefault();
         sosDispatcher.sendTextMessage(phoneNumber, null, SOS, sentPI, deliveredPI);
     }
@@ -134,6 +190,10 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
      * @return
      */
     public boolean sentToEndPoint(String endPoint, String SOS) {
+        if(Operations.isDeviceConnected(context)) {
+            Operations.postRequest(context.getString(R.string.googlemap_endpoint),SOS);
+            return true;
+        }
         return  false;
     }
 
@@ -165,9 +225,13 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
         return details;
     }
 
+    public void activateFailSafe() {
+
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-
+        System.out.print("Location received: \n");
         if(hasPendingDispatch) {
             Toast.makeText(context, "Upadate recieved ",Toast.LENGTH_SHORT).show();
             String locDetails = "";
@@ -175,13 +239,26 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
                 locDetails = getLocationDetails(location);
             }
 
-           String message = String.format("%s \n%s,%s \n%s \n%s", context.getString(distressType.getValue()), location.getLongitude(), location.getLatitude(), locDetails, " " );
-           sendSMS(context.getString(R.string.phone_number), context.getString(distressType.getValue()));
-            System.out.print("Location received: \n");
+            Message message = new Message(context.getString(distressType.getValue()), location.getLongitude(), location.getLatitude(), locDetails, " " );
+            List<String> numbers = contact.getNumbers();
+            Log.i("Checking number:",numbers.toString());
+            sendSMS(numbers, message.toString());
+            logger.log(message,contact.getNumberIds());
+            //sendSMS(context.getString(R.string.phone_number), message.toString());
+            //sentToEndPoint(context.getString(R.string.googlemap_endpoint),message.toString());
+
+            Log.i("Dispatch",contact.getNumbers().toString());
             System.out.println(message);
             hasPendingDispatch = false;
-           GPS.getInstance(context).removeLocationUpadate();
-            Toast.makeText(context, "Listener removed. ",Toast.LENGTH_SHORT).show();
+            //stopTracking();
+            Log.i("Dispatch", "Listener removed.");
+        }
+
+        if(tracking) {
+            Tracker tracker = new Tracker(context);
+            tracker.execute(location);
+        }else {
+            stopTracking();
         }
 
     }
@@ -204,6 +281,23 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
     @Override
     public void onCancel() {
         Toast.makeText(context,"Dialog canceled.", Toast.LENGTH_SHORT).show();
+    }
+
+    public void listenToBroadcast() {
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                isFalsePositive = false;
+                Toast.makeText(context,"Fail safe disabled",Toast.LENGTH_SHORT).show();
+            }
+        }, new IntentFilter("FAIL_SAFE_DISABLED"));
+
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                sendFalsePositive();
+            }
+        }, new IntentFilter(FAILE_SAFE));
     }
 
     enum DistressType {

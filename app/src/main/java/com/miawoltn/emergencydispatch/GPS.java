@@ -19,12 +19,14 @@ public class GPS {
 
     LocationManager locationManager;
     LocationListener myLocationListener;
+    DialogCancelListener locationRequestCancel;
+    static GPS localInstance = null;
     static Context context;
     Location location;
     long minTime = 0;
     long minDistance = 0;
-    static GPS localInstance = null;
-    DialogCancelListener locationRequestCancel;
+
+
 
     /**
      *
@@ -100,7 +102,8 @@ public class GPS {
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, myLocationListener);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
-        Toast.makeText(context, locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)+" ",Toast.LENGTH_SHORT).show();
+        Log.i("Last known location", String.valueOf(locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)));
+        //Toast.makeText(context, locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)+" ",Toast.LENGTH_SHORT).show();
 
     }
 
@@ -108,53 +111,5 @@ public class GPS {
         //noinspection MissingPermission
         locationManager.removeUpdates(myLocationListener);
     }
-
-
-    private class MyLocationListener implements LocationListener {
-
-        @Override
-        public void onLocationChanged(Location loc) {
-
-            Toast.makeText(context,"Location changed: Lng: " + loc.getLongitude()+"Lat: " + loc.getLatitude(), Toast.LENGTH_SHORT).show();
-
-
-        /*------- To get city name from coordinates -------- */
-           /* String cityName = null;
-            Geocoder gcd = new Geocoder(context, Locale.getDefault());
-            List<Address> addresses;
-            try {
-                addresses = gcd.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
-                if (addresses.size() > 0) {
-                    System.out.println(addresses.get(0));
-                    cityName = addresses.get(0).getLocality();
-                }
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Toast.makeText(context, cityName, Toast.LENGTH_SHORT).show();*/
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            Toast.makeText(context,"Provider disabled.", Toast.LENGTH_SHORT).show();
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            Toast.makeText(context,"Provider enabled.", Toast.LENGTH_SHORT).show();
-
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            Toast.makeText(context,"Status changed.", Toast.LENGTH_SHORT).show();
-
-        }
-    }
-
-
 
 }

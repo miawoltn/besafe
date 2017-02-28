@@ -7,11 +7,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,6 +28,8 @@ import java.net.URL;
 
 public class Operations {
 
+
+    public static final String TRACKER_LOG_FILENAME = "tracker.log";
 
     /**
      *
@@ -41,7 +49,7 @@ public class Operations {
     /**
      * Function to show settings alert dialog
      */
-    public static void showSettingsAlert(final Context context, String title, String message, String positiveButton, String negativeButton, final DialogCancelListener dialogCancelListener)
+    public static AlertDialog.Builder showSettingsAlert(final Context context, String title, String message, String positiveButton, String negativeButton, final DialogCancelListener dialogCancelListener)
     {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
 
@@ -74,6 +82,7 @@ public class Operations {
         });
 
         alertDialog.show();
+        return  alertDialog;
     }
 
 
@@ -94,14 +103,72 @@ public class Operations {
                     stringBuilder.append(line);
                     line = bufferedReader.readLine();
                 }
-
                 return line;
             }
         }
         catch (Exception e){
             e.printStackTrace();return "Error";
         }
-
         return "empty";
+    }
+
+    public static String postRequest(String endPoint, String data) {
+        String message = "";
+        if(endPoint == null || endPoint.trim().length() == 0) {
+            message = "enpoint not specified";
+            return message;
+        }
+
+        HttpURLConnection connection;
+        try {
+            URL url = new URL(endPoint);
+            connection = (HttpURLConnection)url.openConnection();
+            StringBuilder stringBuilder = new StringBuilder();
+            connection.setConnectTimeout(5000);
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+            JSONObject jsonObject = new JSONObject(data);
+            String postData = jsonObject.toString();
+            byte[] outputBytes = postData.getBytes("UTF-8");
+            OutputStream os = connection.getOutputStream();
+            os.write(outputBytes);
+
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                InputStream inputStream = connection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                String line = bufferedReader.readLine();
+                while (line != null) {
+                    stringBuilder.append(line);
+                    line = bufferedReader.readLine();
+                }
+                return line;
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            message = e.getMessage();
+        }
+        return message;
+    }
+
+
+    /**
+     * Helper method for saving settings to file
+     * @param filename
+     * @param data
+     */
+    public static void writeLog(Context context, String filename, String data) {
+        try {
+            //opens the file for writing in a private context
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(filename, Context.MODE_APPEND));
+            outputStreamWriter.write(data);
+            outputStreamWriter.write("\n");
+            outputStreamWriter.close();
+        }
+        catch (Exception e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
     }
 }
