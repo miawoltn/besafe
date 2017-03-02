@@ -1,12 +1,14 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.activity;
 
-import android.location.Criteria;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageButton;
+
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.SOSDispatcher;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
         String best = locationManager.getBestProvider(crit, false);*/
        // locationManager.requestLocationUpdates(best, 0, 1, locationListener);
 
-        fire = (ImageButton) findViewById(R.id.fire);
-        robbery = (ImageButton) findViewById(R.id.robbery);
+        fire = (ImageButton) findViewById(R.id.w_fire);
+        robbery = (ImageButton) findViewById(R.id.w_robbery);
         terrorist_attack = (ImageButton) findViewById(R.id.terror_attack);
-        murder = (ImageButton) findViewById(R.id.murder);
-        accident = (ImageButton) findViewById(R.id.accident);
-        suicide = (ImageButton) findViewById(R.id.suicide);
-        natural_disaster = (ImageButton) findViewById(R.id.natural_disaster);
+        murder = (ImageButton) findViewById(R.id.w_murder);
+        accident = (ImageButton) findViewById(R.id.w_accident);
+        suicide = (ImageButton) findViewById(R.id.w_suicide);
+        natural_disaster = (ImageButton) findViewById(R.id.w_natural_disaster);
 
         fire.setOnClickListener(onClickListener);
         robbery.setOnClickListener(onClickListener);
@@ -55,11 +57,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.fire:
+                case R.id.w_fire:
                     sosDispatcher.sendSMS(getString(R.string.phone_number), getString(R.string.fire_message));
 
                     break;
-                case R.id.robbery:
+                case R.id.w_robbery:
                     sosDispatcher.sendSMS(getString(R.string.phone_number),getString(R.string.robbery_message));
                     break;
                 case R.id.terror_attack:
@@ -79,16 +81,16 @@ public class MainActivity extends AppCompatActivity {
                     // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
                     Toast.makeText(MainActivity.this, locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)+" ",Toast.LENGTH_SHORT).show();*/
                     break;
-                case R.id.murder:
+                case R.id.w_murder:
                     sosDispatcher.sendSMS(getString(R.string.phone_number),getString(R.string.murder_message));
                     break;
-                case R.id.accident:
+                case R.id.w_accident:
                     sosDispatcher.sendSMS(getString(R.string.phone_number),getString(R.string.accident_message));
                     break;
-                case R.id.suicide:
+                case R.id.w_suicide:
                     sosDispatcher.sendSMS(getString(R.string.phone_number),getString(R.string.suicide_message));
                     break;
-                case R.id.natural_disaster:
+                case R.id.w_natural_disaster:
                     sosDispatcher.sendSMS(getString(R.string.phone_number),getString(R.string.natural_disaster_message));
                     break;
             }

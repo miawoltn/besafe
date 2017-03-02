@@ -1,29 +1,22 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.fragment;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.provider.ContactsContract;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -31,25 +24,36 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.miawoltn.emergencydispatch.Contact.*;
+import com.miawoltn.emergencydispatch.core.Logger;
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.Contact;
+import com.miawoltn.emergencydispatch.core.Contact.*;
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link DispatchFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link DispatchFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 
 
-public class ContactActivity extends AppCompatActivity {
+public class DispatchFragment extends Fragment {
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private List<Fragment> sectionViews = new ArrayList<>();
-    private final int PAGES = 2;
-    private final String PAGE_1_TITLE = "Dispatch Numbers";
-    private final String PAGE_2_TITLE = "Contact List";
-    private Contact contact;
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
 
     static ContactListAdapter contactListAdapter, dispatchNumbersAdapter;
@@ -63,33 +67,70 @@ public class ContactActivity extends AppCompatActivity {
     Logger contactsDbHelper;
     static DispatchListLoader dispatchListLoader;
     static ContactListLoader contactListLoader;
+
+    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private List<Fragment> sectionViews = new ArrayList<>();
+    private final int PAGES = 2;
+    private final String PAGE_1_TITLE = "Dispatch Numbers";
+    private final String PAGE_2_TITLE = "Contact List";
+    private ViewPager mViewPager;
     FloatingActionButton contactListFab, dispatchListFab;
     int currentPage = 0;
+    private Contact contact;
+
+    private OnFragmentInteractionListener mListener;
+
+    public DispatchFragment() {
+        // Required empty public constructor
+    }
 
     /**
-     * The {@link ViewPager} that will host the section contents.
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment DispatchFragment.
      */
-    private ViewPager mViewPager;
+    // TODO: Rename and change types and number of parameters
+    public static DispatchFragment newInstance(String param1, String param2) {
+        DispatchFragment fragment = new DispatchFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Create the contactListAdapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        sectionViews.addAll(Arrays.asList(DispatchNumbersFragment.newInstance(), ContactListFragment.newInstance()));
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
 
 
-        contact = Contact.getInstance(ContactActivity.this);
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.dispatch_fragment,container,false);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+         super.onActivityCreated(savedInstanceState);
+
+        View view = getView();
+        contact = Contact.getInstance(getContext());
         contactsTempList = new ArrayList<>();
         dispatchTempList = new ArrayList<>();
+        sectionViews.addAll(Arrays.asList( DispatchNumbersFragment.newInstance(),  ContactListFragment.newInstance()));
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getChildFragmentManager());
 
-        // Set up the ViewPager with the sections contactListAdapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) view.findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -106,33 +147,19 @@ public class ContactActivity extends AppCompatActivity {
                     currentPage = position;
                     // updateAdapter(historyListView, dispatchTempList);
                 }
-                if(fragment instanceof  ContactListFragment) {
+                if(fragment instanceof ContactListFragment) {
                     dispatchListFab.setVisibility(View.INVISIBLE);
                     contactListFab.setVisibility(View.VISIBLE);
                     currentPage = position;
                 }
             }
-
             @Override
             public void onPageScrollStateChanged(int state) {
 
             }
         });
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
-        dispatchListLoader = new DispatchListLoader();
-        contactListLoader = new ContactListLoader();
-
-        contactsListArray = new ArrayList<>();
-        dispatchList = new ArrayList<>();
-        contentResolver = getContentResolver();
-        contactsDbHelper = (Logger)contact.getContactDbHelper();
-        phone = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
-
-
-        searchView = (SearchView)findViewById(R.id.search);
+        searchView = (SearchView)view.findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -153,9 +180,7 @@ public class ContactActivity extends AppCompatActivity {
             }
         });
 
-
-
-        contactListFab = (FloatingActionButton) findViewById(R.id.fab);
+        contactListFab = (FloatingActionButton) view.findViewById(R.id.fab);
         contactListFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -180,7 +205,7 @@ public class ContactActivity extends AppCompatActivity {
             }
         });
 
-        dispatchListFab = (FloatingActionButton) findViewById(R.id.fab1);
+        dispatchListFab = (FloatingActionButton) view.findViewById(R.id.fab1);
         dispatchListFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -203,29 +228,67 @@ public class ContactActivity extends AppCompatActivity {
             }
         });
 
+
+        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+
+        dispatchListLoader = new DispatchListLoader();
+        contactListLoader = new ContactListLoader();
+
+        contactsListArray = new ArrayList<>();
+        dispatchList = new ArrayList<>();
+        contentResolver = getActivity().getContentResolver();
+        contactsDbHelper = (Logger)contact.getContactDbHelper();
+        phone = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC");
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_dispatch_numbers, menu);
-        return true;
+    public void onDestroyView() {
+        ViewGroup viewGroup = (ViewGroup) getActivity().findViewById(R.id.container);
+        viewGroup.removeAllViews();
+        super.onDestroyView();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
         }
-
-        return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+       /* if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }*/
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
+    }
+
 
     /**
      * A placeholder fragment containing a simple view.
@@ -270,7 +333,7 @@ public class ContactActivity extends AppCompatActivity {
 
             //super.onPostExecute(aVoid);
 
-            dispatchNumbersAdapter = new ContactListAdapter(dispatchList, ContactActivity.this);
+            dispatchNumbersAdapter = new ContactListAdapter(dispatchList, getContext());
             dispatchListView.setAdapter(dispatchNumbersAdapter);
             dispatchListView.setFastScrollEnabled(true);
             dispatchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -365,7 +428,7 @@ public class ContactActivity extends AppCompatActivity {
             contactsListArray.clear();
             contactsListArray.addAll(contactsTempList);
 
-            contactListAdapter = new ContactListAdapter(contactsListArray, ContactActivity.this);
+            contactListAdapter = new ContactListAdapter(contactsListArray, getContext());
             contactListView.setAdapter(contactListAdapter);
             contactListView.setFastScrollEnabled(true);
             contactListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -467,7 +530,7 @@ public class ContactActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             if(view == null) {
-                LayoutInflater inflater=getLayoutInflater();
+                LayoutInflater inflater = getActivity().getLayoutInflater();
                 view = inflater.inflate(R.layout.contact_layout, parent, false);
             }
 
@@ -499,7 +562,7 @@ public class ContactActivity extends AppCompatActivity {
                 contacts.addAll(userContacts);
             }
             else {
-                for (UserContactModel userContact : userContacts) {
+                for (Contact.UserContactModel userContact : userContacts) {
                     if(userContact.getName().toLowerCase(Locale.getDefault()).contains(text)) {
                         contacts.add(userContact);
                     }
@@ -519,14 +582,14 @@ public class ContactActivity extends AppCompatActivity {
         if(baseAdapter.getAdapter() != null) {
             ((ContactListAdapter) baseAdapter.getAdapter()).update(userContactModels);
         }else {
-            ContactListAdapter contactListAdapter = new ContactListAdapter( userContactModels, ContactActivity.this);
+            ContactListAdapter contactListAdapter = new  ContactListAdapter(userContactModels, getContext());
             baseAdapter.setAdapter(contactListAdapter);
         }
     }
 
     static class ContactHolder {
 
-       // private TextView id = null;
+        // private TextView id = null;
         private TextView name = null;
         private TextView number = null;
         private CheckBox selected = null;
@@ -540,51 +603,10 @@ public class ContactActivity extends AppCompatActivity {
             selected = (CheckBox) row.findViewById(R.id.selected);
         }
 
-        void populateFrom(UserContactModel helper) {
+        void populateFrom(Contact.UserContactModel helper) {
             name.setText(helper.getName());
             number.setText(helper.getNumber());
             selected.setChecked(helper.getSelected());
         }
     }
-
-   /* public static class UserContactModel {
-
-        String id;
-        String name;
-        String number;
-        boolean selected;
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setNumber(String number) {
-            this.number = number;
-        }
-
-        public void setSelected(boolean selected) {
-            this.selected = selected;
-        }
-
-        public String getId() {
-            return  id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getNumber() {
-            return number;
-        }
-
-        public boolean getSelected() {
-            return selected;
-        }
-    }
-*/
 }

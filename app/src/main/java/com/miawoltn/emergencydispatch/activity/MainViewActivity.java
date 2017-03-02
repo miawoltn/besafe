@@ -1,10 +1,13 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
@@ -20,7 +23,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainView extends AppCompatActivity
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.SOSDispatcher;
+import com.miawoltn.emergencydispatch.fragment.SettingsFragment;
+import com.miawoltn.emergencydispatch.fragment.DispatchFragment;
+import com.miawoltn.emergencydispatch.fragment.HistoryFragment;
+import com.miawoltn.emergencydispatch.fragment.HomeFragment;
+import com.miawoltn.emergencydispatch.util.Operations;
+
+public class MainViewActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private NavigationView navigationView;
@@ -37,11 +48,16 @@ public class MainView extends AppCompatActivity
 
     // tags used to attach the fragments
     private static final String TAG_HOME = "home";
-    private static final String TAG_PHOTOS = "dispatch";
-    private static final String TAG_MOVIES = "history";
+    private static final String TAG_DISPATCH = "dispatch";
+    private static final String TAG_HISTORY = "history";
     //private static final String TAG_NOTIFICATIONS = "notifications";
     private static final String TAG_SETTINGS = "settings";
+    private static final String TAG_HOW_TO = "how_to";
+    private static final String TAG_ABOUT_US = "about_us";
+    private static final String TAG_PRIVACY_POLICY = "privacy_policy";
     public static String CURRENT_TAG = TAG_HOME;
+
+    private boolean tracking = false;
 
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
@@ -49,6 +65,7 @@ public class MainView extends AppCompatActivity
     // flag to load home fragment when user presses back key
     private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,11 +99,12 @@ public class MainView extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBroadcast(new Intent(SOSDispatcher.FAILE_SAFE));
-                Snackbar.make(view, "False Positive Triggered.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                sendBroadcast(new Intent(SOSDispatcher.FAIL_SAFE));
+               /* Snackbar.make(view, "False Positive Triggered.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
         });
+
 
         // load nav menu header data
         loadNavHeader();
@@ -99,6 +117,7 @@ public class MainView extends AppCompatActivity
             CURRENT_TAG = TAG_HOME;
             loadHomeFragment();
         }
+
     }
 
 
@@ -147,8 +166,8 @@ public class MainView extends AppCompatActivity
                 // update the main content by replacing fragments
                 Fragment fragment = getHomeFragment();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
-                        android.R.anim.fade_out);
+                fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right);
                 fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG);
                 fragmentTransaction.commitAllowingStateLoss();
             }
@@ -162,11 +181,17 @@ public class MainView extends AppCompatActivity
         // show or hide the fab button
         toggleFab();
 
+        //toggle tracking icon
+       // toggleTracking();
+
         //Closing drawer on item click
         drawer.closeDrawers();
 
         // refresh toolbar menu
         invalidateOptionsMenu();
+
+        //register tracking broadcast
+        registerTrackingBroadcast();
     }
 
 
@@ -186,8 +211,17 @@ public class MainView extends AppCompatActivity
                 return historyFragment;
             case 3:
                 // settings fragment
-                //SettingsFragment settingsFragment = new SettingsFragment();
-                return new Fragment();
+                SettingsFragment settingsFragment = new SettingsFragment();
+                return settingsFragment;
+/*            case 4:
+                HowToFragment howToFragment = new HowToFragment();
+                return howToFragment;
+            case 5:
+                AboutUsFragment aboutUsFragment = new AboutUsFragment();
+                return aboutUsFragment;
+            case 6:
+                PrivacyPolicyFragment privacyPolicyFragment = new PrivacyPolicyFragment();
+                return privacyPolicyFragment;*/
             default:
                 return new Fragment();
         }
@@ -218,24 +252,29 @@ public class MainView extends AppCompatActivity
                         break;
                     case R.id.nav_photos:
                         navItemIndex = 1;
-                        CURRENT_TAG = TAG_PHOTOS;
+                        CURRENT_TAG = TAG_DISPATCH;
                         break;
                     case R.id.nav_movies:
                         navItemIndex = 2;
-                        CURRENT_TAG = TAG_MOVIES;
+                        CURRENT_TAG = TAG_HISTORY;
                         break;
                     case R.id.nav_settings:
                         navItemIndex = 3;
                         CURRENT_TAG = TAG_SETTINGS;
                         break;
+                    case R.id.nav_how_to:
+                        // launch new intent instead of loading fragment
+                        startActivity(new Intent(MainViewActivity.this, HowToActivity.class ));
+                        drawer.closeDrawers();
+                        return true;
                     case R.id.nav_about_us:
                         // launch new intent instead of loading fragment
-                        startActivity(new Intent(MainView.this, ContactActivity.class /*AboutUsActivity.class*/));
+                        startActivity(new Intent(MainViewActivity.this, AboutUsActivity.class ));
                         drawer.closeDrawers();
                         return true;
                     case R.id.nav_privacy_policy:
                         // launch new intent instead of loading fragment
-                        startActivity(new Intent(MainView.this, ContactActivity.class/*PrivacyPolicyActivity.class*/));
+                        startActivity(new Intent(MainViewActivity.this, PrivacyPolicyActivity.class));
                         drawer.closeDrawers();
                         return true;
                     default:
@@ -305,18 +344,31 @@ public class MainView extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-
-        // show menu only when home fragment is selected
-        if (navItemIndex == 0) {
             getMenuInflater().inflate(R.menu.main, menu);
-        }
+            this.menu = menu;
+            toggleTracking();
 
-        // when fragment is notifications, load the menu created for notifications
-        if (navItemIndex == 3) {
-            getMenuInflater().inflate(R.menu.notifications, menu);
-        }
         return true;
     }
+
+    public void toggleTracking() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if(tracking) {
+                menu.getItem(0).setIcon(getDrawable(R.drawable.ic_track_white));
+            }else {
+                menu.getItem(0).setIcon(getDrawable(R.drawable.ic_track_black));
+            }
+
+        } else {
+            if(tracking) {
+                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_track_white));
+            }else {
+                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_track_black));
+            }
+
+        }
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -324,10 +376,19 @@ public class MainView extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_logout) {
-            Toast.makeText(getApplicationContext(), "Logout user!", Toast.LENGTH_LONG).show();
+        if (id == R.id.action_track) {
+            if(tracking){
+                tracking = false;
+                toggleTracking();
+                Operations.showSnackBar(getWindow().getDecorView().getRootView(),"Tracking enabled.");
+            }
+            else {
+                tracking = true;
+                toggleTracking();
+            }
+
+            Toast.makeText(getApplicationContext(), "Track user!", Toast.LENGTH_LONG).show();
             return true;
         }
 
@@ -377,5 +438,14 @@ public class MainView extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void registerTrackingBroadcast() {
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                tracking = true;
+            }
+        }, new IntentFilter(SOSDispatcher.TRACKING_ENABLED));
     }
 }

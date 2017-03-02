@@ -1,10 +1,11 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.core;
 
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.AsyncTask;
+
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.util.Operations;
 
 /**
  * Created by Muhammad Amin on 2/24/2017.
@@ -25,7 +26,7 @@ public class Tracker extends AsyncTask<Location, Void, String> {
     @Override
     protected String doInBackground(Location... params) {
         if(Operations.isDeviceConnected(context)) {
-            return  Operations.postRequest(context.getString(R.string.googlemap_endpoint), String.format("%f,%f",params[0].getLongitude(),params[0].getLatitude()));
+           // return  Operations.postRequest(context.getString(R.string.googlemap_endpoint), String.format("%f,%f",params[0].getLongitude(),params[0].getLatitude()));
         }
         return "Device offline;";
     }

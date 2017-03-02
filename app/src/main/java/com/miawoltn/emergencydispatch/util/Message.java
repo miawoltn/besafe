@@ -1,4 +1,4 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.util;
 
 /**
  * Created by Muhammad Amin on 2/24/2017.
@@ -43,6 +43,6 @@ public class Message {
 
     @Override
     public String toString() {
-        return String.format("%s \n%s,%s \n%s \n%s", distressType, longitude, latitude, locationDetails, name);
+        return String.format("%s \n%s,%s \n%s \n%s", distressType, longitude, latitude,"08069036740", locationDetails, "0");
     }
 }

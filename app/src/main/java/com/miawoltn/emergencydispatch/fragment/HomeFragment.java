@@ -1,4 +1,4 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.fragment;
 
 import android.content.Context;
 import android.location.LocationManager;
@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.TextView;
+
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.SOSDispatcher;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -79,13 +81,13 @@ public class HomeFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         sosDispatcher = new SOSDispatcher(getContext());
         View v = getView();
-        fire = (ImageButton) v.findViewById(R.id.fire);
-        robbery = (ImageButton) v.findViewById(R.id.robbery);
+        fire = (ImageButton) v.findViewById(R.id.w_fire);
+        robbery = (ImageButton) v.findViewById(R.id.w_robbery);
         terrorist_attack = (ImageButton) v.findViewById(R.id.terror_attack);
-        murder = (ImageButton) v.findViewById(R.id.murder);
-        accident = (ImageButton) v.findViewById(R.id.accident);
-        suicide = (ImageButton) v.findViewById(R.id.suicide);
-        natural_disaster = (ImageButton) v.findViewById(R.id.natural_disaster);
+        murder = (ImageButton) v.findViewById(R.id.w_murder);
+        accident = (ImageButton) v.findViewById(R.id.w_accident);
+        suicide = (ImageButton) v.findViewById(R.id.w_suicide);
+        natural_disaster = (ImageButton) v.findViewById(R.id.w_natural_disaster);
 
         fire.setOnClickListener(onClickListener);
         robbery.setOnClickListener(onClickListener);
@@ -100,25 +102,25 @@ public class HomeFragment extends Fragment {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.fire:
+                case R.id.w_fire:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Fire);
                     break;
-                case R.id.robbery:
+                case R.id.w_robbery:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Robbery);
                     break;
                 case R.id.terror_attack:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Terror_Attack);
                      break;
-                case R.id.murder:
+                case R.id.w_murder:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Murder);
                     break;
-                case R.id.accident:
+                case R.id.w_accident:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Accident);
                     break;
-                case R.id.suicide:
+                case R.id.w_suicide:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Suicide);
                     break;
-                case R.id.natural_disaster:
+                case R.id.w_natural_disaster:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Natural_Disaster);
                     break;
             }

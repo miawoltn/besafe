@@ -1,4 +1,4 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.core;
 
 import android.Manifest;
 import android.content.Context;
@@ -6,10 +6,14 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.*;
 import android.widget.Toast;
+
+import com.miawoltn.emergencydispatch.util.Operations;
+import com.miawoltn.emergencydispatch.R;
 
 /**
  * Created by Muhammad Amin on 2/18/2017.
@@ -19,7 +23,7 @@ public class GPS {
 
     LocationManager locationManager;
     LocationListener myLocationListener;
-    DialogCancelListener locationRequestCancel;
+    LocationSettingsDialogListener locationRequestCancel;
     static GPS localInstance = null;
     static Context context;
     Location location;
@@ -83,7 +87,7 @@ public class GPS {
         }
     }
 
-    public void requestLocationUpadate(DialogCancelListener locationRequestCancel) {
+    public void requestLocationUpadate(LocationSettingsDialogListener locationRequestCancel) {
         this.locationRequestCancel = locationRequestCancel;
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -96,20 +100,60 @@ public class GPS {
             return ;
         }
 
-         if (!isGPSEnabled() ) {
-             Operations.showSettingsAlert(context,context.getString(R.string.GPSAlertDialogTitle), context.getString(R.string.GPSAlertDialogMessage), context.getString(R.string.settings), context.getString(R.string.cancel), locationRequestCancel);
-         }
+        showSettings();
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, myLocationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
         Log.i("Last known location", String.valueOf(locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)));
-        //Toast.makeText(context, locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)+" ",Toast.LENGTH_SHORT).show();
 
+    }
+
+    public void requestTrackingLocationUpdate() {
+        //noinspection MissingPermission
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, myLocationListener);
     }
 
     public void removeLocationUpadate() {
         //noinspection MissingPermission
         locationManager.removeUpdates(myLocationListener);
+    }
+
+    public void showSettings() {
+
+
+        if (!isGPSEnabled()) {
+            final AlertDialog alert =  Operations.showSettingsAlert(context,context.getString(R.string.GPSAlertDialogTitle), context.getString(R.string.GPSAlertDialogMessage), context.getString(R.string.settings), context.getString(R.string.cancel), locationRequestCancel);
+            // Hide after some seconds
+            final Handler handler  = new Handler();
+            final Runnable runnable = new Runnable() {
+                boolean flag = false;
+                @Override
+                public void run() {
+                    if (alert.isShowing()) {
+                        handler.removeCallbacks(this);
+                       // Toast.makeText(context,"Dialog canceled.",Toast.LENGTH_SHORT).show();
+                        alert.dismiss();
+                        Toast.makeText(context,"Dialog dismissed.", Toast.LENGTH_SHORT).show();
+                        Operations.sendBroadcast(context, context.getString(R.string.location_request_dialog_timeout));
+                    }
+                }
+            };
+
+
+          /*  alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    handler.removeCallbacks(runnable);
+                    if(isGPSEnabled())  {
+                        Toast.makeText(context,"Dialog canceled.",Toast.LENGTH_SHORT).show();
+                        Operations.sendBroadcast(context, context.getString(R.string.location_request_dialog_timeout));
+                    }
+
+                }
+            });*/
+
+            handler.postDelayed(runnable, 10000);
+        }
     }
 
 }

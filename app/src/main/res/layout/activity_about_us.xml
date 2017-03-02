@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.miawoltn.emergencydispatch.activity.MainViewActivity">
+    tools:context="com.miawoltn.emergencydispatch.activity.AboutUsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -21,19 +21,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <FrameLayout
-        android:id="@+id/frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"></FrameLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/home_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@color/navcolorPrimary"
-        app:srcCompat="@android:drawable/ic_menu_revert" />
+    <include layout="@layout/content_about_us" />
 
 </android.support.design.widget.CoordinatorLayout>

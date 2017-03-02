@@ -10,13 +10,13 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.miawoltn.emergencydispatch.MainView">
+    tools:context="com.miawoltn.emergencydispatch.activity.MainViewActivity">
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/robbery"
-        android:id="@+id/robbery"
-        android:layout_alignTop="@+id/fire"
+        android:id="@+id/w_robbery"
+        android:layout_alignTop="@+id/w_fire"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="42dp" />
 
@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/fire"
-        android:id="@+id/fire"
+        android:id="@+id/w_fire"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginStart="29dp" />
@@ -34,25 +34,25 @@
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/natural_disaster"
         android:layout_marginTop="18dp"
-        android:id="@+id/natural_disaster"
-        android:layout_below="@+id/accident"
+        android:id="@+id/w_natural_disaster"
+        android:layout_below="@+id/w_accident"
         android:layout_alignStart="@+id/terror_attack" />
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/murder"
-        android:id="@+id/murder"
+        android:id="@+id/w_murder"
         android:layout_alignTop="@+id/terror_attack"
-        android:layout_alignStart="@+id/robbery" />
+        android:layout_alignStart="@+id/w_robbery" />
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/suicide"
-        android:id="@+id/suicide"
-        android:layout_above="@+id/natural_disaster"
-        android:layout_alignStart="@+id/murder" />
+        android:id="@+id/w_suicide"
+        android:layout_above="@+id/w_natural_disaster"
+        android:layout_alignStart="@+id/w_murder" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -60,15 +60,15 @@
         app:srcCompat="@drawable/terrorist"
         android:layout_marginTop="12dp"
         android:id="@+id/terror_attack"
-        android:layout_below="@+id/fire"
-        android:layout_alignStart="@+id/fire" />
+        android:layout_below="@+id/w_fire"
+        android:layout_alignStart="@+id/w_fire" />
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/accident"
-        android:id="@+id/accident"
+        android:id="@+id/w_accident"
         android:layout_below="@+id/terror_attack"
-        android:layout_alignStart="@+id/natural_disaster"
+        android:layout_alignStart="@+id/w_natural_disaster"
         android:layout_marginTop="15dp" />
 </RelativeLayout>

@@ -1,28 +1,17 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.core;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.os.*;
-import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.PortUnreachableException;
+import com.miawoltn.emergencydispatch.util.Operations;
+
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.LogRecord;
-
-import com.miawoltn.emergencydispatch.Contact.*;
 
 /**
  * Created by Muhammad Amin on 2/18/2017.
@@ -35,7 +24,8 @@ public class Logger extends SQLiteOpenHelper {
     private long lastMessageId = 0;
     private long timeOfLastSOS = 0;
     private Handler delayHandler;
-    private long DELAY_DURATION = 1000*60;
+    private long DELAY_DURATION = 1000 * 60;
+    private String FAIL_SAFE_DISABLED = "FAIL_SAFE_DISABLED";
     private String rawQuery = "Select * from "+ ContactEntry.TABLE_NAME + " c INNER JOIN "
             + MessageContactEntry.TABLE_NAME + " mc on c._id = mc.contact_id JOIN "
             + MessageEntry.TABLE_NAME + " m on m._id = mc.message_id WHERE m._id = ?";
@@ -110,7 +100,7 @@ public class Logger extends SQLiteOpenHelper {
         return instance;
     }
 
-    public void log(Message message, List<Integer> contactIds) {
+    public boolean log(com.miawoltn.emergencydispatch.util.Message message, List<Integer> contactIds) {
         long message_id = insert(MESSAGE_ENTRY,message.getDistressType(), String.format("%f,%f",message.getLongitude(),message.getLatitude()), message.getLocationDetails(), System.currentTimeMillis());
         for(int contactId : contactIds) {
             insert(MESSAGE_CONTACT_ENTRY,message_id,contactId);
@@ -122,12 +112,17 @@ public class Logger extends SQLiteOpenHelper {
             @Override
             public void run() {
                 resetFailSafe();
-                context.sendBroadcast(new Intent("FAIL_SAFE_DISABLED"));
+                Operations.sendBroadcast(context, FAIL_SAFE_DISABLED); //context.sendBroadcast(new Intent("FAIL_SAFE_DISABLED"));
                 Log.i("Fail Safe Reset","fail safe has been reset");
             }
         };
 
         delayHandler.postDelayed(runnable, DELAY_DURATION);
+
+        if(message_id != -1)
+            return true;
+        else
+            return false;
     }
 
 

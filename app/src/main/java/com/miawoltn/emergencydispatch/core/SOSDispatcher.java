@@ -1,4 +1,4 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.core;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -10,39 +10,43 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.fragment.SettingsFragment;
+import com.miawoltn.emergencydispatch.util.Message;
+import com.miawoltn.emergencydispatch.util.Operations;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Locale;
+
 
 /**
  * Created by Muhammad Amin on 2/18/2017.
  */
 
-public class SOSDispatcher implements LocationListener, DialogCancelListener {
+public class SOSDispatcher implements LocationListener, LocationSettingsDialogListener, TrackingDialogListener {
 
     final String SENT = "SMS_SENT";
     final String DELIVERED = "SMS_DELIVERED";
-    final static String FAILE_SAFE = "SEND_FALSE_POSITIVE";
+    public final static String FAIL_SAFE = "SEND_FALSE_POSITIVE";
+    public final static String TRACKING_ENABLED = "TRACKING_ENABLED";
+    final static String TRACKING_DISABLED = "TRACKING_DISABLED";
+    static boolean hasPendingDispatch = false;
+    static boolean tracking = false;
+    long lastTrackTime = System.currentTimeMillis();
+    DistressType distressType = null;
+    boolean isFalsePositive = true;
     Context context;
     Contact contact;
     Logger logger;
     GPS gps;
-
-
-    boolean hasPendingDispatch = false;
-    boolean tracking = false;
-    DistressType distressType = null;
-    boolean isFalsePositive = true;
 
 
     /**
@@ -82,25 +86,31 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
         startTracking();
     }
 
+    /**
+     *
+     */
     public void sendFalsePositive() {
         if(isFalsePositive) {
-            List<String> numbers = contact.getNumbers();
-            Log.i("Checking number:",numbers.toString());
-            sendSMS(numbers, "Please ignore it is a false positive");
+            sendSMS(contact.getNumbers(), context.getString(R.string.fail_safe_ok_message));
+           // sentToEndPoint(context.getString(R.string.googlemap_endpoint), context.getString(R.string.fail_safe_ok_message));
             //logger.log(,contact.getNumberIds());
-            Toast.makeText(context,"False positive sent",Toast.LENGTH_LONG).show();
+            Operations.createNofication(context,context.getString(R.string.fail_safe_notification_title), context.getString(R.string.fail_safe_notification_ok_message)  );
         } else {
-            Toast.makeText(context, R.string.fail_safe_message, Toast.LENGTH_SHORT).show();
+            Operations.createNofication(context,context.getString(R.string.fail_safe_notification_title), context.getString(R.string.fail_safe_notification_fail_message) );
         }
 
     }
 
-    public void Track() {
+    /**
+     * Enables real time tracking.
+     */
+    private void Track() {
         tracking = true;
+        gps.requestTrackingLocationUpdate();
     }
 
     /**
-     *
+     *  Attaches listener to gps device.
      */
     public void startTracking() {
         gps.setLocationListener(this);
@@ -108,7 +118,7 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
     }
 
     /**
-     *
+     * Removes location listening from gps.
      */
     public void stopTracking() {
         gps.removeLocationUpadate();
@@ -142,19 +152,24 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
             public void onReceive(Context context, Intent intent) {
                 switch (getResultCode()) {
                     case AppCompatActivity.RESULT_OK:
-                        Toast.makeText(context, R.string.result_ok, Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title), context.getString(R.string.result_ok));
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Toast.makeText(context, R.string.generic_failure, Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.generic_failure));
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Toast.makeText(context, R.string.no_service, Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.no_service));
                         break;
                     case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Toast.makeText(context, R.string.null_pdu, Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.null_pdu));
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Toast.makeText(context, R.string.radio_off, Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.radio_off));
                         break;
                 }
             }
@@ -166,15 +181,16 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
                 switch (getResultCode())
                 {
                     case AppCompatActivity.RESULT_OK:
-                        Toast.makeText(context, "SOSDispatcher delivered",Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.sms_delivered));
                         break;
                     case AppCompatActivity.RESULT_CANCELED:
-                        Toast.makeText(context, "SOSDispatcher not delivered", Toast.LENGTH_SHORT).show();
+                        if(SettingsFragment.isSMSNotificationEnabled())
+                        Operations.createNofication(context,context.getString(R.string.sms_notification_title),  context.getString(R.string.sms_not_delivered));
                         break;
                 }
             }
         }, new IntentFilter(DELIVERED));
-
 
         SmsManager sosDispatcher = SmsManager.getDefault();
         sosDispatcher.sendTextMessage(phoneNumber, null, SOS, sentPI, deliveredPI);
@@ -189,10 +205,11 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
      * @param SOS
      * @return
      */
-    public boolean sentToEndPoint(String endPoint, String SOS) {
+    public boolean sentToEndPoint(String endPoint, Message SOS) {
         if(Operations.isDeviceConnected(context)) {
-            Operations.postRequest(context.getString(R.string.googlemap_endpoint),SOS);
-            return true;
+            String response = Operations.postRequest(endPoint,SOS);
+            if(response != null)
+              return true;
         }
         return  false;
     }
@@ -239,27 +256,55 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
                 locDetails = getLocationDetails(location);
             }
 
-            Message message = new Message(context.getString(distressType.getValue()), location.getLongitude(), location.getLatitude(), locDetails, " " );
-            List<String> numbers = contact.getNumbers();
-            Log.i("Checking number:",numbers.toString());
-            sendSMS(numbers, message.toString());
-            logger.log(message,contact.getNumberIds());
-            //sendSMS(context.getString(R.string.phone_number), message.toString());
-            //sentToEndPoint(context.getString(R.string.googlemap_endpoint),message.toString());
+            //Prepare message and send to endpints: SMS, Control Unit and Log.
+            final Message message = new Message(context.getString(distressType.getValue()), location.getLongitude(), location.getLatitude(), locDetails, " " );
+            sendSMS(contact.getNumbers(), message.toString());
 
-            Log.i("Dispatch",contact.getNumbers().toString());
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean status = sentToEndPoint("http://192.168.137.1/message",message);
+                    if(SettingsFragment.isControUnitNotificationEnabled()) {
+                        if(status)
+                            Operations.createNofication(context,context.getString(R.string.control_unit_notification_title), context.getString(R.string.control_unit_dispatch_ok_message));
+                        else
+                            Operations.createNofication(context,context.getString(R.string.control_unit_notification_title), context.getString(R.string.control_unit_dispatch_fail_message));
+                    }
+                }
+            }).start();
+            logger.log(message,contact.getNumberIds());
+            
+
+
             System.out.println(message);
             hasPendingDispatch = false;
-            //stopTracking();
-            Log.i("Dispatch", "Listener removed.");
+            Log.d("pending dispatch","No pending dispatch");
+            if(Operations.isDeviceConnected(context)) {
+                final AlertDialog alert =  Operations.showTrackingAlert(context,context.getString(R.string.tracking_dialog_title), context.getString(R.string.tracking_dialog_messge), "Ok",context.getString(R.string.cancel), this);
+                lastTrackTime = System.currentTimeMillis();
+                //return;
+            }
+            else {
+                stopTracking();
+                Log.i("Dispatch", "Listener removed.");
+            }
+
         }
 
         if(tracking) {
-            Tracker tracker = new Tracker(context);
-            tracker.execute(location);
-        }else {
+            Log.i("Location:","tracking");
+            if((System.currentTimeMillis() - lastTrackTime) > 5000) {
+                Tracker tracker = new Tracker(context);
+                tracker.execute(location);
+                Log.i("Tracking", String.valueOf(location.getLongitude())+", "+String.valueOf(location.getLongitude())+" "+
+                        System.currentTimeMillis());
+            }
+
+        }/*else {
             stopTracking();
-        }
+            Log.i("tracking - else","Tracking stopped");
+        }*/
 
     }
 
@@ -283,6 +328,27 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
         Toast.makeText(context,"Dialog canceled.", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onOk() {
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        context.startActivity(intent);
+    }
+
+    @Override
+    public void onTrackingAccept() {
+        Track();
+        context.sendBroadcast(new Intent(TRACKING_ENABLED));
+    }
+
+    @Override
+    public void onTrackingIgnore() {
+        stopTracking();
+    }
+
+    public static boolean isTracking() {
+        return tracking;
+    }
+
     public void listenToBroadcast() {
         context.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -297,10 +363,40 @@ public class SOSDispatcher implements LocationListener, DialogCancelListener {
             public void onReceive(Context context, Intent intent) {
                 sendFalsePositive();
             }
-        }, new IntentFilter(FAILE_SAFE));
+        }, new IntentFilter(FAIL_SAFE));
+
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Message message = new Message(context.getString(distressType.getValue()), 0.0, 0.0, " ", " " );
+                List<String> numbers = contact.getNumbers();
+                Log.i("Checking number:",numbers.toString());
+                sendSMS(numbers, message.toString());
+                logger.log(message,contact.getNumberIds());
+            }
+        }, new IntentFilter(context.getString(R.string.location_request_dialog_timeout)));
+
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                tracking = true;
+                Toast.makeText(context,"Tracking enabled",Toast.LENGTH_SHORT).show();
+            }
+        }, new IntentFilter(TRACKING_ENABLED));
+
+        context.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+               /* if(context.getApplicationInfo().packageName.equals("com.miawoltn.emergencydispatch"))
+                    Toast.makeText(context,"Broadcast within app",Toast.LENGTH_SHORT).show();*/
+                Toast.makeText(context,"Tracking in disabled",Toast.LENGTH_SHORT).show();
+                tracking = false;
+            }
+        }, new IntentFilter(TRACKING_DISABLED));
+
     }
 
-    enum DistressType {
+    public enum DistressType {
         Accident(R.string.accident_message),
         Fire(R.string.fire_message),
         Murder(R.string.murder_message),

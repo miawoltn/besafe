@@ -1,4 +1,4 @@
-package com.miawoltn.emergencydispatch;
+package com.miawoltn.emergencydispatch.fragment;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -15,9 +15,11 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.miawoltn.emergencydispatch.core.Logger;
+import com.miawoltn.emergencydispatch.R;
+
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;

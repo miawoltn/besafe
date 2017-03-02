@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.miawoltn.emergencydispatch.fragment.SettingsFragment"
+    android:padding="25dp">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <Switch
+        android:text="SMS Dispatch Notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sms_notification"
+        android:layout_marginBottom="15dp" />
+
+    <Switch
+        android:text="Control Unit Dispatch Notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/control_unit_notification"
+        android:layout_marginBottom="15dp" />
+
+    <Switch
+        android:text="Fail Safe Notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/fail_safe_notification"
+        android:layout_marginBottom="15dp" />
+
+    <Switch
+        android:text="Tracking notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tracking_notification" />
+</LinearLayout>
