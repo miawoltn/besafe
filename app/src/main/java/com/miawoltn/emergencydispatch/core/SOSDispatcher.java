@@ -11,7 +11,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.util.Log;
@@ -35,9 +34,11 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
 
     final String SENT = "SMS_SENT";
     final String DELIVERED = "SMS_DELIVERED";
-    public final static String FAIL_SAFE = "SEND_FALSE_POSITIVE";
-    public final static String TRACKING_ENABLED = "TRACKING_ENABLED";
-    final static String TRACKING_DISABLED = "TRACKING_DISABLED";
+    public final static String SEND_FAIL_SAFE = "send_fail_safe";
+    public final static String TRACKING_ENABLED = "tracking_enabled";
+    public final static String TRACKING_DISABLED = "tracking_disabled";
+    public final static String FAIL_SAFE_DISABLED = "fail_safe_disabled";
+    public final static String FAIL_SAFE_ENABLED = "fail_safe_disabled";
     static boolean hasPendingDispatch = false;
     static boolean tracking = false;
     long lastTrackTime = System.currentTimeMillis();
@@ -90,14 +91,11 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
      *
      */
     public void sendFalsePositive() {
-        if(isFalsePositive) {
             sendSMS(contact.getNumbers(), context.getString(R.string.fail_safe_ok_message));
+            logger.updateMessage();
            // sentToEndPoint(context.getString(R.string.googlemap_endpoint), context.getString(R.string.fail_safe_ok_message));
             //logger.log(,contact.getNumberIds());
             Operations.createNofication(context,context.getString(R.string.fail_safe_notification_title), context.getString(R.string.fail_safe_notification_ok_message)  );
-        } else {
-            Operations.createNofication(context,context.getString(R.string.fail_safe_notification_title), context.getString(R.string.fail_safe_notification_fail_message) );
-        }
 
     }
 
@@ -106,7 +104,7 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
      */
     private void Track() {
         tracking = true;
-        gps.requestTrackingLocationUpdate();
+       // gps.requestTrackingLocationUpdate();
     }
 
     /**
@@ -279,9 +277,10 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
 
             System.out.println(message);
             hasPendingDispatch = false;
+            context.sendBroadcast(new Intent(FAIL_SAFE_ENABLED));
             Log.d("pending dispatch","No pending dispatch");
             if(Operations.isDeviceConnected(context)) {
-                final AlertDialog alert =  Operations.showTrackingAlert(context,context.getString(R.string.tracking_dialog_title), context.getString(R.string.tracking_dialog_messge), "Ok",context.getString(R.string.cancel), this);
+                Operations.showTrackingAlert(context,context.getString(R.string.tracking_dialog_title), context.getString(R.string.tracking_dialog_messge), context.getString(R.string.yes),context.getString(R.string.cancel), this);
                 lastTrackTime = System.currentTimeMillis();
                 //return;
             }
@@ -299,6 +298,7 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
                 tracker.execute(location);
                 Log.i("Tracking", String.valueOf(location.getLongitude())+", "+String.valueOf(location.getLongitude())+" "+
                         System.currentTimeMillis());
+                lastTrackTime = System.currentTimeMillis();
             }
 
         }/*else {
@@ -345,25 +345,13 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
         stopTracking();
     }
 
-    public static boolean isTracking() {
-        return tracking;
-    }
-
     public void listenToBroadcast() {
-        context.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                isFalsePositive = false;
-                Toast.makeText(context,"Fail safe disabled",Toast.LENGTH_SHORT).show();
-            }
-        }, new IntentFilter("FAIL_SAFE_DISABLED"));
-
         context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 sendFalsePositive();
             }
-        }, new IntentFilter(FAIL_SAFE));
+        }, new IntentFilter(SEND_FAIL_SAFE));
 
         context.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -380,17 +368,16 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
             @Override
             public void onReceive(Context context, Intent intent) {
                 tracking = true;
-                Toast.makeText(context,"Tracking enabled",Toast.LENGTH_SHORT).show();
+               // Toast.makeText(context,"Tracking enabled",Toast.LENGTH_SHORT).show();
             }
         }, new IntentFilter(TRACKING_ENABLED));
 
         context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-               /* if(context.getApplicationInfo().packageName.equals("com.miawoltn.emergencydispatch"))
-                    Toast.makeText(context,"Broadcast within app",Toast.LENGTH_SHORT).show();*/
-                Toast.makeText(context,"Tracking in disabled",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(context,"Tracking in disabled",Toast.LENGTH_SHORT).show();
                 tracking = false;
+                stopTracking();
             }
         }, new IntentFilter(TRACKING_DISABLED));
 
@@ -403,7 +390,8 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
         Natural_Disaster(R.string.natural_disaster_message),
         Robbery(R.string.robbery_message),
         Suicide(R.string.suicide_message),
-        Terror_Attack(R.string.terrror_attack_message);
+        Terror_Attack(R.string.terrror_attack_message),
+        Emergency_Others(R.string.emergency_others);
 
         private int value;
         DistressType(int value) {

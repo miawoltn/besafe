@@ -153,7 +153,7 @@ public class Contact {
             return newRowId;
         }
 
-        public Cursor selectAll() {
+        public Cursor selectAllMessages() {
             SQLiteDatabase db = getReadableDatabase();
 
             // Define a projection that specifies which columns from the database

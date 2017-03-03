@@ -187,7 +187,6 @@ public class Operations {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
             JSONObject jsonObject = new JSONObject();
 /*            jsonObject.put("message", String.valueOf(data.getDistressType()));
             jsonObject.put("longitude", String.valueOf(data.getLongitude()));

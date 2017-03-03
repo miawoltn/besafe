@@ -161,7 +161,7 @@ public class HistoryFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... params) {
 
-            history = historyDbHelper.selectAll(Logger.MESSAGE_ENTRY);
+            history = historyDbHelper.selectAllMessages(Logger.MESSAGE_ENTRY);
 
 
             if(history != null) {

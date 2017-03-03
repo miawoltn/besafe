@@ -41,11 +41,8 @@ public class MainViewActivity extends AppCompatActivity
     private TextView txtName, txtWebsite;
     private Toolbar toolbar;
     private FloatingActionButton fab;
-
-
     // index to identify current nav menu item
     public static int navItemIndex = 0;
-
     // tags used to attach the fragments
     private static final String TAG_HOME = "home";
     private static final String TAG_DISPATCH = "dispatch";
@@ -56,14 +53,12 @@ public class MainViewActivity extends AppCompatActivity
     private static final String TAG_ABOUT_US = "about_us";
     private static final String TAG_PRIVACY_POLICY = "privacy_policy";
     public static String CURRENT_TAG = TAG_HOME;
-
-    private boolean tracking = false;
-
     // toolbar titles respected to selected nav menu item
     private String[] activityTitles;
-
     // flag to load home fragment when user presses back key
     private boolean shouldLoadHomeFragOnBackPress = true;
+    private boolean failSafeEnabled = false;
+    private boolean tracking = false;
     private Handler mHandler;
     private Menu menu;
 
@@ -99,9 +94,12 @@ public class MainViewActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBroadcast(new Intent(SOSDispatcher.FAIL_SAFE));
-               /* Snackbar.make(view, "False Positive Triggered.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
+                sendBroadcast(new Intent(SOSDispatcher.SEND_FAIL_SAFE));
+                sendBroadcast(new Intent(SOSDispatcher.TRACKING_DISABLED));
+                failSafeEnabled = false;
+                tracking = false;
+                toggleFab();
+                toggleTracking();
             }
         });
 
@@ -111,6 +109,8 @@ public class MainViewActivity extends AppCompatActivity
 
         // initializing navigation menu
         setUpNavigationView();
+
+        toggleFab();
 
         if (savedInstanceState == null) {
             navItemIndex = 0;
@@ -381,14 +381,15 @@ public class MainViewActivity extends AppCompatActivity
             if(tracking){
                 tracking = false;
                 toggleTracking();
-                Operations.showSnackBar(getWindow().getDecorView().getRootView(),"Tracking enabled.");
+                Operations.showSnackBar(getWindow().getDecorView().getRootView(),"Tracking Disabled.");
+                sendBroadcast(new Intent(SOSDispatcher.TRACKING_DISABLED));
             }
             else {
                 tracking = true;
                 toggleTracking();
+                Operations.showSnackBar(getWindow().getDecorView().getRootView(),"Tracking Enabled.");
+                sendBroadcast(new Intent(SOSDispatcher.TRACKING_ENABLED));
             }
-
-            Toast.makeText(getApplicationContext(), "Track user!", Toast.LENGTH_LONG).show();
             return true;
         }
 
@@ -409,7 +410,7 @@ public class MainViewActivity extends AppCompatActivity
 
     // show or hide the fab
     private void toggleFab() {
-        if(navItemIndex == 0)
+        if(navItemIndex == 0 && failSafeEnabled)
             fab.show();
         else
             fab.hide();
@@ -445,7 +446,23 @@ public class MainViewActivity extends AppCompatActivity
             @Override
             public void onReceive(Context context, Intent intent) {
                 tracking = true;
+                toggleTracking();
             }
         }, new IntentFilter(SOSDispatcher.TRACKING_ENABLED));
+
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                failSafeEnabled = true;
+                toggleFab();
+            }
+        }, new IntentFilter(SOSDispatcher.FAIL_SAFE_ENABLED));
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                failSafeEnabled = false;
+                toggleFab();
+            }
+        }, new IntentFilter(SOSDispatcher.FAIL_SAFE_DISABLED));
     }
 }

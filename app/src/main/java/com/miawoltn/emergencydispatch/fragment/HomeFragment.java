@@ -123,6 +123,8 @@ public class HomeFragment extends Fragment {
                 case R.id.w_natural_disaster:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Natural_Disaster);
                     break;
+                case R.id.emergency_others:
+                    sosDispatcher.Dispatch(SOSDispatcher.DistressType.Emergency_Others);
             }
         }
     };

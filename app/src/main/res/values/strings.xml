@@ -96,6 +96,7 @@
     <string name="accident_message">There is an accident that just happpend, please help!</string>
     <string name="suicide_message">There is a suicide attempt, please help!</string>
     <string name="natural_disaster_message">There is a natural disaster, please help!</string>
+    <string name="emergency_others">There is an emergency situation. Please help!</string>
     <string name="phone_number">08069036740</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">Arnold Dispatch</string>
@@ -169,5 +170,7 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="message_endpoint">http://169.254.85.227/message/</string>
+    <string name="yes">Yes</string>
+    <string name="title_activity_instructions">InstructionsActivity</string>
 
 </resources>
