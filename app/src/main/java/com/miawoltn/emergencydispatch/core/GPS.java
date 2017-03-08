@@ -103,9 +103,8 @@ public class GPS {
         showSettings();
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, myLocationListener);
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
+       // locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, myLocationListener);
         Log.i("Last known location", String.valueOf(locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)));
-
     }
 
     public void requestTrackingLocationUpdate() {
@@ -131,26 +130,11 @@ public class GPS {
                 public void run() {
                     if (alert.isShowing()) {
                         handler.removeCallbacks(this);
-                       // Toast.makeText(context,"Dialog canceled.",Toast.LENGTH_SHORT).show();
                         alert.dismiss();
                         Toast.makeText(context,"Dialog dismissed.", Toast.LENGTH_SHORT).show();
-                        Operations.sendBroadcast(context, context.getString(R.string.location_request_dialog_timeout));
                     }
                 }
             };
-
-
-          /*  alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    handler.removeCallbacks(runnable);
-                    if(isGPSEnabled())  {
-                        Toast.makeText(context,"Dialog canceled.",Toast.LENGTH_SHORT).show();
-                        Operations.sendBroadcast(context, context.getString(R.string.location_request_dialog_timeout));
-                    }
-
-                }
-            });*/
 
             handler.postDelayed(runnable, 10000);
         }

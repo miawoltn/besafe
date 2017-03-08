@@ -16,12 +16,25 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.miawoltn.emergencydispatch.R;
 import com.miawoltn.emergencydispatch.fragment.SettingsFragment;
 import com.miawoltn.emergencydispatch.util.Message;
 import com.miawoltn.emergencydispatch.util.Operations;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,6 +57,7 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
     long lastTrackTime = System.currentTimeMillis();
     DistressType distressType = null;
     boolean isFalsePositive = true;
+    static boolean endpointStatus = false;
     Context context;
     Contact contact;
     Logger logger;
@@ -199,23 +213,76 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
      * Sends SOS to the specified endpoint. Returns true if sent successfully and false if something happens and
      * message couldn't be sent, like, no internet, wrong endpoint, request timeout.
      *
-     * @param endPoint
      * @param SOS
      * @return
      */
-    public boolean sentToEndPoint(String endPoint, Message SOS) {
+    public void sentToEndPoint(Message SOS) {
         if(Operations.isDeviceConnected(context)) {
-            String response = Operations.postRequest(endPoint,SOS);
-            if(response != null)
-              return true;
+            RequestQueue queue = Volley.newRequestQueue(context);
+            String url = Operations.generateURL("192.168.137.1/message");
+            String userId = "0";
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("message", SOS.getDistressType());
+                jsonObject.put("longitude", SOS.getLongitude());
+                jsonObject.put("latitude", SOS.getLatitude());
+                jsonObject.put("location", SOS.getLocationDetails());
+                jsonObject.put("Failsafe", 0);
+                for(String file : context.fileList()) {
+                    if(file == Operations.USER_ID){
+                        userId =  Operations.readFromFile(context, Operations.USER_ID);
+                        break;
+                    }
+                }
+                jsonObject.put("userId", userId);
+            }
+            catch (Exception e) {
+                Log.e("Json object", e.getMessage());
+                Toast.makeText(context,"An error occurred. Please initiate the process again.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            final String requestBody = jsonObject.toString();
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            endpointStatus = true;
+                            Operations.writeLog(context,Operations.USER_ID, response);
+                            Log.i("User details", response);
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("User details", "error occured.");
+                }
+            }) {
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        responseString = String.valueOf(new String(response.data));
+                    }
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+            queue.add(stringRequest);
         }
-        return  false;
     }
 
 
     public String getLocationDetails(Location location) {
-
-            String details = " ";
+            String details = "";
             Geocoder gcd = new Geocoder(context, Locale.getDefault());
             List<Address> addresses;
             try {
@@ -228,14 +295,6 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
             }
             catch (IOException e) {
                 return details;
-               /* try {
-                    String result = Operations.SendRequest(context.getString(R.string.googlemap_endpoint)+location.getLatitude()+","+location.getLongitude());
-                    JSONArray jsonArray = new JSONArray(result);
-                    JSONObject jsonObject = jsonArray.getJSONObject(0);
-                    Toast.makeText(context,jsonObject.getString("formatted_address"), Toast.LENGTH_SHORT).show();
-                } catch (Exception e1) {
-                    return details;
-                }*/
             }
         return details;
     }
@@ -256,26 +315,25 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
 
             //Prepare message and send to endpints: SMS, Control Unit and Log.
             final Message message = new Message(context.getString(distressType.getValue()), location.getLongitude(), location.getLatitude(), locDetails, " " );
-            sendSMS(contact.getNumbers(), message.toString());
+            sendSMS(contact.getNumbers(), message.toString()); // SMS
 
-
+            //control unit
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    boolean status = sentToEndPoint("http://192.168.137.1/message",message);
+                    sentToEndPoint(message);
                     if(SettingsFragment.isControUnitNotificationEnabled()) {
-                        if(status)
+                        if(endpointStatus)
                             Operations.createNofication(context,context.getString(R.string.control_unit_notification_title), context.getString(R.string.control_unit_dispatch_ok_message));
                         else
                             Operations.createNofication(context,context.getString(R.string.control_unit_notification_title), context.getString(R.string.control_unit_dispatch_fail_message));
                     }
                 }
             }).start();
+
+            //log
             logger.log(message,contact.getNumberIds());
-            
 
-
-            System.out.println(message);
             hasPendingDispatch = false;
             context.sendBroadcast(new Intent(FAIL_SAFE_ENABLED));
             Log.d("pending dispatch","No pending dispatch");
@@ -301,11 +359,7 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
                 lastTrackTime = System.currentTimeMillis();
             }
 
-        }/*else {
-            stopTracking();
-            Log.i("tracking - else","Tracking stopped");
-        }*/
-
+        }
     }
 
     @Override
@@ -325,7 +379,6 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
 
     @Override
     public void onCancel() {
-        Toast.makeText(context,"Dialog canceled.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -368,14 +421,12 @@ public class SOSDispatcher implements LocationListener, LocationSettingsDialogLi
             @Override
             public void onReceive(Context context, Intent intent) {
                 tracking = true;
-               // Toast.makeText(context,"Tracking enabled",Toast.LENGTH_SHORT).show();
             }
         }, new IntentFilter(TRACKING_ENABLED));
 
         context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //Toast.makeText(context,"Tracking in disabled",Toast.LENGTH_SHORT).show();
                 tracking = false;
                 stopTracking();
             }

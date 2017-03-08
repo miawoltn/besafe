@@ -1,87 +1,124 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/holo_blue_dark"
-    android:padding="@dimen/widget_margin">
+    android:padding="@dimen/widget_margin"
+    android:background="@color/navcolorPrimary">
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="50">
+        android:layout_weight="1">
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/natural_disaster_widget_icon"
-            android:layout_alignTop="@+id/w_robbery"
-            android:id="@+id/w_natural_disaster" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/robbery_widget_icon"
-            android:id="@+id/w_robbery"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/w_natural_disaster"  />
+            android:src="@drawable/natural_disaster"
+            android:id="@+id/imageView3"
+            android:layout_weight="1" />
 
-        <ImageButton
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/terrorist_attack_widget_icon"
-            android:id="@+id/w_terrorist_attack"
-            android:layout_alignTop="@+id/w_robbery"
-            android:layout_alignStart="@+id/w_robbery" />
+            android:src="@drawable/fire"
+            android:id="@+id/imageView4"
+            android:layout_weight="1" />
 
-        <ImageButton
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/murder_widget_icon"
-            android:layout_alignTop="@+id/w_terrorist_attack"
-            android:layout_toEndOf="@+id/w_terrorist_attack"
-            android:id="@+id/w_murder" />
+            android:src="@drawable/murder"
+            android:id="@+id/imageView5"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="50">
+        android:layout_weight="0.2"
+        android:gravity="center">
 
-        <ImageButton
+        <TextView
+            android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/accident_widget_icon"
-            android:layout_below="@+id/w_natural_disaster"
-            android:layout_alignEnd="@+id/w_natural_disaster"
-            android:id="@+id/w_accident"  />
+            android:id="@+id/textView16"
+            android:layout_weight="1" />
 
-        <ImageButton
+        <TextView
+            android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/suicide_widget_icon"
-            android:layout_alignTop="@+id/w_accident"
-            android:layout_alignEnd="@+id/w_robbery"
-            android:id="@+id/w_suicide"  />
+            android:id="@+id/textView18"
+            android:layout_weight="1" />
 
-        <ImageButton
+        <TextView
+            android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/fire_widget_icon"
-            android:layout_alignBottom="@+id/w_suicide"
-            android:layout_alignStart="@+id/w_terrorist_attack"
-            android:id="@+id/w_fire"  />
+            android:id="@+id/textView20"
+            android:layout_weight="1" />
+    </LinearLayout>
 
-        <ImageButton
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/terrorist"
+            android:id="@+id/imageView6"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/suicide"
+            android:id="@+id/imageView7"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/accident"
+            android:id="@+id/imageView9"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2"
+        android:gravity="center">
+
+        <TextView
+            android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/emergency"
-            android:id="@+id/imageButton8"
-            android:layout_alignTop="@+id/w_fire"
-            android:layout_alignEnd="@+id/w_murder"
-            android:layout_alignBottom="@+id/w_fire"  />
+            android:id="@+id/textView22"
+            android:layout_weight="1" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView23"
+            android:layout_weight="1" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView24"
+            android:layout_weight="1" />
     </LinearLayout>
 
 </LinearLayout>

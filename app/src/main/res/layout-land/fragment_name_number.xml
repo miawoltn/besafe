@@ -10,37 +10,31 @@
     <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="30"
-        android:layout_marginTop="20dp"
+        android:layout_weight="17"
         android:gravity="center">
 
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             app:srcCompat="@drawable/icon"
             android:id="@+id/imageView"
-            android:layout_height="0dp"
-            android:layout_weight="63.68" />
+            android:layout_height="match_parent"
+            android:layout_weight="30" />
 
         <TextView
             android:text="Be Safe will like to have your details in order to identify you better during any emergency."
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:id="@+id/name_number"
-            android:textSize="18sp"
+            android:textSize="24sp"
             android:layout_alignBottom="@+id/textView14"
             android:layout_centerHorizontal="true"
             android:lineSpacingExtra="8sp"
             android:textColor="@color/background"
             android:gravity="center"
-            android:layout_weight="50"
-            android:paddingEnd="25dp"
-            android:paddingLeft="25dp"
-            android:paddingRight="25dp"
-            android:paddingStart="25dp"
-            android:paddingTop="25dp" />
+            android:layout_weight="60" />
 
     </LinearLayout>
 
@@ -89,12 +83,9 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="7"
+        android:layout_weight="10"
         android:weightSum="100"
-        android:gravity="right"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingBottom="10dp">
+        android:gravity="right">
 
         <LinearLayout
             android:orientation="horizontal"

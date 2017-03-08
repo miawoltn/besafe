@@ -36,14 +36,14 @@
         android:layout_marginTop="18dp"
         android:id="@+id/w_natural_disaster"
         android:layout_below="@+id/w_accident"
-        android:layout_alignStart="@+id/terror_attack" />
+        android:layout_alignStart="@+id/w_terrorist_attack" />
 
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/murder"
         android:id="@+id/w_murder"
-        android:layout_alignTop="@+id/terror_attack"
+        android:layout_alignTop="@+id/w_terrorist_attack"
         android:layout_alignStart="@+id/w_robbery" />
 
     <ImageButton
@@ -59,7 +59,7 @@
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/terrorist"
         android:layout_marginTop="12dp"
-        android:id="@+id/terror_attack"
+        android:id="@+id/w_terrorist_attack"
         android:layout_below="@+id/w_fire"
         android:layout_alignStart="@+id/w_fire" />
 
@@ -68,7 +68,7 @@
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/accident"
         android:id="@+id/w_accident"
-        android:layout_below="@+id/terror_attack"
+        android:layout_below="@+id/w_terrorist_attack"
         android:layout_alignStart="@+id/w_natural_disaster"
         android:layout_marginTop="15dp" />
 </RelativeLayout>

@@ -7,14 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,25 +23,32 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.Logger;
 import com.miawoltn.emergencydispatch.util.Operations;
 import com.miawoltn.emergencydispatch.util.UserData;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
+import static android.R.attr.data;
+import static android.R.attr.supportsAssist;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link NameNumberFragment.OnFragmentInteractionListener} interface
+ * {@link DispatchFetchFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link NameNumberFragment#newInstance} factory method to
+ * Use the {@link DispatchFetchFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NameNumberFragment extends Fragment {
+public class DispatchFetchFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -53,19 +57,16 @@ public class NameNumberFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    String name, number, address;
-    boolean nameFlag, numberFlag, addressFlag;
+
+    Logger logger;
     public static UserData userData;
+
+    private TextView name, number, address, back;
+    private Button doneButton;
+
     private OnFragmentInteractionListener mListener;
 
-    private TextView txtName, txtNumber, txtAddress;
-    private Button next;
-    private TextView skip, prev;
-
-    Fragment fragment;
-    FragmentTransaction fragmentTransaction;
-
-    public NameNumberFragment() {
+    public DispatchFetchFragment() {
         // Required empty public constructor
     }
 
@@ -75,11 +76,11 @@ public class NameNumberFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment NameNumberFragment.
+     * @return A new instance of fragment DispatchFetchFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static NameNumberFragment newInstance(String param1, String param2) {
-        NameNumberFragment fragment = new NameNumberFragment();
+    public static DispatchFetchFragment newInstance(String param1, String param2) {
+        DispatchFetchFragment fragment = new DispatchFetchFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -90,105 +91,52 @@ public class NameNumberFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        nameFlag = numberFlag = addressFlag = false;
+        logger = Logger.getInstance(getContext());
         View v = getView();
-        txtName = (EditText) v.findViewById(R.id.name);
-        txtNumber = (EditText) v.findViewById(R.id.number);
-        txtAddress = (EditText) v.findViewById(R.id.address);
-        next = (Button) v.findViewById(R.id.done);
-        skip = (TextView) v.findViewById(R.id.skip);
-        prev = (TextView) v.findViewById(R.id.back);
-
-        if(userData != null) {
-            txtName.setText(userData.getName());
-            txtNumber.setText(userData.getNumber());
-            txtAddress.setText(userData.getAddress());
-        }
-
-        next.setOnClickListener(new View.OnClickListener() {
+        name = (TextView) v.findViewById(R.id.nameText);
+        number = (TextView) v.findViewById(R.id.numberText);
+        address = (TextView) v.findViewById(R.id.addressText);
+        doneButton = (Button) v.findViewById(R.id.done);
+        doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               /* String text = nameNumber.getText().toString();
-                Operations.writeLog(getContext(), Operations.NUMBER_USER, text);*/
-                if(!Operations.isDeviceConnected(getContext())) {
-                    Toast.makeText(getContext(),"Device is offline.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                name = txtName.getText().toString();
-                number = txtNumber.getText().toString();
-                address = txtAddress.getText().toString();
-                if(name.trim().length() > 0) {
-                    if(number.trim().length() > 0) {
-                        if(address.trim().length() > 0) {
-                            DispatchFetchFragment.userData = new UserData(name,number,address);
-                            nextFragment();
-                        }else {
-                            txtAddress.setError("Name is required");
-                        }
-                    }else {
-                        txtNumber.setError("Name is required");
-                    }
-                } else {
-                    txtName.setError("Name is required");
-                }
-
-
-            }
-        });
-
-
-        skip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               // Operations.requestDispatchNumbers(getContext());
+                Operations.postUserData(getContext(),userData);
+                Operations.requestDispatchNumbers(getContext(), logger);
                 getActivity().setResult(Activity.RESULT_OK);
                 getActivity().finish();
             }
         });
-
-        prev.setOnClickListener(new View.OnClickListener() {
+        back = (TextView) v.findViewById(R.id.back);
+        back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                NameNumberFragment.userData = userData;
                 previousFragment();
             }
         });
+        if(userData != null) {
+            name.setText(userData.getName());
+            number.setText(userData.getNumber());
+            address.setText(userData.getAddress());
+        }
+        final TextView mTextView = (TextView) v.findViewById(R.id.text);
+
     }
-
-    private TextWatcher textWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            String str = s.toString();
-            if(str.trim().length() > 0) {
-                next.setEnabled(true);
-            }
-            else {
-                next.setEnabled(false);
-            }
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-        }
-
-    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_name_number, container, false);
+        return inflater.inflate(R.layout.fragment_dispatch_fetch, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -224,21 +172,13 @@ public class NameNumberFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public void nextFragment() {
-        fragment = new DispatchFetchFragment();
-        fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+    public void previousFragment() {
+        Fragment fragment = new NameNumberFragment();
+        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,
                 android.R.anim.slide_out_right);
         fragmentTransaction.replace(R.id.fragment, fragment, "fetch_dispatch");
         fragmentTransaction.commitAllowingStateLoss();
     }
 
-    public void previousFragment() {
-        fragment = new InstructionsActivityFragment();
-        fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left,
-                android.R.anim.slide_out_right);
-        fragmentTransaction.replace(R.id.fragment, fragment, "instructions");
-        fragmentTransaction.commitAllowingStateLoss();
-    }
 }

@@ -38,12 +38,12 @@ public class BeSafeAppWidget extends AppWidgetProvider {
 
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.be_safe_app_widget);
         ComponentName thisWidget = new ComponentName(context, BeSafeAppWidget.class);
-        remoteViews.setOnClickPendingIntent(R.id.w_natural_disaster, getPendingSelfIntent(context, DISASTER_TAG));
+       // remoteViews.setOnClickPendingIntent(R.id.w_natural_disaster, getPendingSelfIntent(context, DISASTER_TAG));
         remoteViews.setOnClickPendingIntent(R.id.w_robbery, getPendingSelfIntent(context, ROBBERY_TAG));
-        remoteViews.setOnClickPendingIntent(R.id.w_terrorist_attack, getPendingSelfIntent(context, TERROR_TAG));
+         /*remoteViews.setOnClickPendingIntent(R.id.w_terrorist_attack, getPendingSelfIntent(context, TERROR_TAG));
         remoteViews.setOnClickPendingIntent(R.id.w_murder, getPendingSelfIntent(context, MURDER_TAG));
         remoteViews.setOnClickPendingIntent(R.id.w_accident, getPendingSelfIntent(context, ACCIDENT_TAG));
-        remoteViews.setOnClickPendingIntent(R.id.w_suicide, getPendingSelfIntent(context, SUICIDE_TAG));
+        remoteViews.setOnClickPendingIntent(R.id.w_suicide, getPendingSelfIntent(context, SUICIDE_TAG));*/
         remoteViews.setOnClickPendingIntent(R.id.w_fire, getPendingSelfIntent(context, FIRE_TAG));
         appWidgetManager.updateAppWidget(thisWidget, remoteViews);
 

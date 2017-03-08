@@ -158,8 +158,7 @@ public class MainViewActivity extends AppCompatActivity
 
         // Sometimes, when fragment has huge data, screen seems hanging
         // when switching between navigation menus
-        // So using runnable, the fragment is loaded with cross fade effect
-        // This effect can be seen in GMail app
+        // So using runnable, the fragment is loaded with cross fade effect.
         Runnable mPendingRunnable = new Runnable() {
             @Override
             public void run() {
@@ -391,18 +390,6 @@ public class MainViewActivity extends AppCompatActivity
                 sendBroadcast(new Intent(SOSDispatcher.TRACKING_ENABLED));
             }
             return true;
-        }
-
-        // user is in notifications fragment
-        // and selected 'Mark all as Read'
-        if (id == R.id.action_mark_all_read) {
-            Toast.makeText(getApplicationContext(), "All notifications marked as read!", Toast.LENGTH_LONG).show();
-        }
-
-        // user is in notifications fragment
-        // and selected 'Clear All'
-        if (id == R.id.action_clear_notifications) {
-            Toast.makeText(getApplicationContext(), "Clear all notifications!", Toast.LENGTH_LONG).show();
         }
 
         return super.onOptionsItemSelected(item);

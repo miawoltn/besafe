@@ -18,35 +18,32 @@ public class SplashScreenActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
-        new Handler().postDelayed(new Runnable() {
-
-            /*
-             * Showing splash screen with a timer. This will be useful when you
-             * want to show case your app logo / company
-             */
-
-            @Override
-            public void run() {
-                // This method will be executed once the timer is over
-                // Start your app main activity
-                Intent i = new Intent(SplashScreenActivity.this, MainViewActivity.class);
-                startActivity(i);
-
-                // close this activity
-                finish();
-            }
-        }, SPLASH_TIME_OUT);
 
 
         SharedPreferences settings = getSharedPreferences("prefs", 0);
         boolean firstRun = settings.getBoolean("firstRun", true);
-        if ( firstRun )
-        {
+        if ( firstRun ) {
             // here run your first-time instructions, for example :
             startActivityForResult(
                     new Intent(SplashScreenActivity.this, InstructionsActivity.class),
                     INSTRUCTIONS_CODE);
 
+        }else {
+            finish();
+            startActivity(new Intent(SplashScreenActivity.this, MainViewActivity.class));
+        }
+
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            SharedPreferences settings = getSharedPreferences("prefs", 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("firstRun", false);
+            editor.commit();
+            finish();
+            startActivity(new Intent(SplashScreenActivity.this, MainViewActivity.class));
         }
     }
 

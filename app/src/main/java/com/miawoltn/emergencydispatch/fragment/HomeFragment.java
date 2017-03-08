@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         View v = getView();
         fire = (ImageButton) v.findViewById(R.id.w_fire);
         robbery = (ImageButton) v.findViewById(R.id.w_robbery);
-        terrorist_attack = (ImageButton) v.findViewById(R.id.terror_attack);
+        terrorist_attack = (ImageButton) v.findViewById(R.id.w_terrorist_attack);
         murder = (ImageButton) v.findViewById(R.id.w_murder);
         accident = (ImageButton) v.findViewById(R.id.w_accident);
         suicide = (ImageButton) v.findViewById(R.id.w_suicide);
@@ -108,7 +108,7 @@ public class HomeFragment extends Fragment {
                 case R.id.w_robbery:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Robbery);
                     break;
-                case R.id.terror_attack:
+                case R.id.w_terrorist_attack:
                     sosDispatcher.Dispatch(SOSDispatcher.DistressType.Terror_Attack);
                      break;
                 case R.id.w_murder:

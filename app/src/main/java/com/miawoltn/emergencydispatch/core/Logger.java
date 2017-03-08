@@ -118,7 +118,7 @@ public class Logger extends SQLiteOpenHelper {
     }
 
     public boolean log(com.miawoltn.emergencydispatch.util.Message message, List<Integer> contactIds) {
-        long message_id = insertMessage(MESSAGE_ENTRY,message.getDistressType(), String.format("%f,%f",message.getLongitude(),message.getLatitude()), message.getLocationDetails(), System.currentTimeMillis());
+        long message_id = insertMessage(MESSAGE_ENTRY,message.getDistressType(), String.format("%f,%f",message.getLongitude(),message.getLatitude()), message.getLocationDetails(),0, System.currentTimeMillis());
         for(int contactId : contactIds) {
             insertMessage(MESSAGE_CONTACT_ENTRY,message_id,contactId);
         }

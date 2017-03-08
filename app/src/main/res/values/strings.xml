@@ -172,5 +172,6 @@
     <string name="message_endpoint">http://169.254.85.227/message/</string>
     <string name="yes">Yes</string>
     <string name="title_activity_instructions">InstructionsActivity</string>
+    <string name="disclaimer">By clicking continue, you agree to the terms and conditions and privacy policy of \'Be Safe\'.</string>
 
 </resources>

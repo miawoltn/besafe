@@ -79,8 +79,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/accident"
-                    android:layout_below="@+id/terror_attack"
-                    android:layout_alignStart="@+id/terror_attack"
+                    android:layout_below="@+id/w_terrorist_attack"
+                    android:layout_alignStart="@+id/w_terrorist_attack"
                     android:id="@+id/w_accident"
                     android:layout_weight="40" />
 
@@ -90,7 +90,7 @@
                     app:srcCompat="@drawable/natural_disaster"
                     android:id="@+id/w_natural_disaster"
                     android:layout_below="@+id/w_accident"
-                    android:layout_alignStart="@+id/terror_attack"
+                    android:layout_alignStart="@+id/w_terrorist_attack"
                     android:layout_weight="40" />
             </LinearLayout>
 
@@ -135,7 +135,7 @@
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/murder"
                     android:id="@+id/w_murder"
-                    android:layout_alignTop="@+id/terror_attack"
+                    android:layout_alignTop="@+id/w_terrorist_attack"
                     android:layout_alignStart="@+id/w_robbery"
                     android:layout_weight="40" />
             </LinearLayout>
@@ -171,7 +171,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:srcCompat="@drawable/terrorist"
-                    android:id="@+id/terror_attack"
+                    android:id="@+id/w_terrorist_attack"
                     android:layout_below="@+id/w_fire"
                     android:layout_alignStart="@+id/w_fire"
                     android:layout_weight="40" />
@@ -210,6 +210,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
+
     </ScrollView>
 
 

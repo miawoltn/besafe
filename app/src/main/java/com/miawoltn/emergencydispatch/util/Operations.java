@@ -15,18 +15,33 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.miawoltn.emergencydispatch.core.LocationSettingsDialogListener;
 import com.miawoltn.emergencydispatch.R;
+import com.miawoltn.emergencydispatch.core.Logger;
 import com.miawoltn.emergencydispatch.core.TrackingDialogListener;
 import com.miawoltn.emergencydispatch.fragment.HomeFragment;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -38,6 +53,8 @@ public class Operations {
 
 
     public static final String TRACKER_LOG_FILENAME = "tracker.log";
+    public static final String MESSAGE_ID = "id.message";
+    public static final String USER_ID = "id.user";
 
     /**
      *
@@ -234,6 +251,43 @@ public class Operations {
         }
     }
 
+
+
+
+    /**
+     * Helper method for reading settings from file
+     * @param filename
+     * @return
+     */
+    public static String readFromFile(Context context, String filename) {
+
+        String ret = "";
+
+        try {
+            //reads the content of the file
+            InputStream inputStream = context.openFileInput(filename);
+
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        }
+        catch (Exception e) {
+            Log.e("login activity", "File not found: " + e.toString());
+        }
+
+        return ret;
+    }
+
     public static void createNofication(Context context, String title, String message) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_notification)
@@ -269,9 +323,6 @@ public class Operations {
         return  new Intent(context,intentClass).putExtras(bundle);
     }
 
-
-
-
     /**
      *
      * @param service
@@ -286,5 +337,103 @@ public class Operations {
      */
     public static void stopService(Context context, Intent service) {
         context.stopService(service);
+    }
+
+
+    public static String generateURL(String endpoint) {
+        return String.format("http://%s",endpoint);
+    }
+
+
+    public static void requestDispatchNumbers(Context context, final Logger logger) {
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = "http://192.168.137.1/getEmergencyNumbers";
+        final JSONObject jsonObject = new JSONObject();
+
+        StringRequest stringRequest = new StringRequest( url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("Response: ", response.toString());
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            for(int i = 0; i < jsonArray.length(); i++) {
+                                 JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                                 logger.insertContact(jsonObject1.getString("Agency"), jsonObject1.getString("Number"), System.currentTimeMillis());
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("json error", e.getMessage());
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }
+        ) {
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = " ";
+                if (response != null) {
+                    responseString = new String(response.data);
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+        queue.add(stringRequest);
+    }
+
+    public static void postUserData(final Context context, UserData userData) {
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = Operations.generateURL("192.168.137.1/regUser");
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("Name", userData.getName());
+            jsonObject.put("ContactNumber", userData.getNumber());
+            jsonObject.put("Address", userData.getAddress());
+        }
+        catch (Exception e) {
+            Log.e("Json object", e.getMessage());
+        }
+
+        final String requestBody = jsonObject.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Operations.writeLog(context,Operations.USER_ID, response);
+                        Log.i("User details", response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("User details", "error occured.");
+            }
+        }) {
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(new String(response.data));
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+        queue.add(stringRequest);
     }
 }

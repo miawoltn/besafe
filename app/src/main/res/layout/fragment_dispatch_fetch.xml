@@ -1,0 +1,169 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/navcolorPrimary"
+    tools:context="com.miawoltn.emergencydispatch.setup.NameNumberFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="30"
+        android:layout_marginTop="20dp"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            app:srcCompat="@drawable/icon"
+            android:id="@+id/imageView"
+            android:layout_height="0dp"
+            android:layout_weight="63.68" />
+
+        <TextView
+            android:text="Please verify that the information you provide is correct."
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:id="@+id/name_number"
+            android:textSize="18sp"
+            android:layout_alignBottom="@+id/textView14"
+            android:layout_centerHorizontal="true"
+            android:lineSpacingExtra="8sp"
+            android:textColor="@color/background"
+            android:gravity="center"
+            android:layout_weight="50"
+            android:paddingEnd="25dp"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:paddingStart="25dp"
+            android:paddingTop="25dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20"
+        android:layout_margin="25dp">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="30">
+
+            <TextView
+                android:text="Name:    "
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView17"
+                android:layout_weight="30"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/nameText"
+                android:layout_weight="70"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="30">
+
+            <TextView
+                android:text="Number:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView19"
+                android:layout_weight="30"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/numberText"
+                android:layout_weight="70"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="30">
+
+            <TextView
+                android:text="Address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView21"
+                android:layout_weight="30"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/addressText"
+                android:layout_weight="70"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:gravity="bottom|center"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="50"
+            android:gravity="bottom|left|center"
+            android:paddingLeft="10dp">
+
+            <TextView
+                android:text="Back"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/back"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textColorHighlight="@android:color/background_light" />
+        </LinearLayout>
+
+        <Button
+            android:text="Done"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/done"
+            android:layout_weight="50"
+            android:textColor="@color/navcolorPrimary"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="140dp" />
+
+    </LinearLayout>
+
+
+</LinearLayout>
